@@ -1,0 +1,67 @@
+<?php 
+/* ============================================================================
+ * RiskType defines the type of a risk.
+ */ 
+require_once('_securityCheck.php');
+class MilestoneType extends Type {
+
+  // Define the layout that will be used for lists
+    
+  private static $_databaseCriteria = array('scope'=>'Milestone');
+  
+  private static $_fieldsAttributes=array("name"=>"required", 
+                                          "idWorkflow"=>"required",
+                                          "mandatoryDescription"=>"nobr",
+                                          "mandatoryResourceOnHandled"=>"nobr",
+                                          "mandatoryResultOnDone"=>"nobr",
+                                          "lockHandled"=>"nobr",
+                                          "lockDone"=>"nobr",
+                                          "lockIdle"=>"nobr",
+                                          "lockCancelled"=>"nobr",
+                                          "internalData"=>"hidden",
+                                          "showInFlash"=>"hidden");
+   /** ==========================================================================
+   * Constructor
+   * @param $id the id of the object in the database (null if not stored yet)
+   * @return void
+   */ 
+  function __construct($id = NULL) {
+  	global $flashReport;
+  
+    parent::__construct($id);
+    if (isset($flashReport) and ($flashReport==true or $flashReport=='true')) {
+      self::$_fieldsAttributes["showInFlash"]="";
+    }
+  }
+
+  
+   /** ==========================================================================
+   * Destructor
+   * @return void
+   */ 
+  function __destruct() {
+    parent::__destruct();
+  }
+
+// ============================================================================**********
+// GET STATIC DATA FUNCTIONS
+// ============================================================================**********
+  
+
+  /** ========================================================================
+   * Return the specific database criteria
+   * @return the databaseTableName
+   */
+  protected function getStaticDatabaseCriteria() {
+    return self::$_databaseCriteria;
+  }
+  
+    /** ==========================================================================
+   * Return the specific fieldsAttributes
+   * @return the fieldsAttributes
+   */
+  protected function getStaticFieldsAttributes() {
+    return self::$_fieldsAttributes;
+  }
+}
+?>

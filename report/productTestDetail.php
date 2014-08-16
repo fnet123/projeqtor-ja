@@ -1,0 +1,111 @@
+<?php
+include_once '../tool/projeqtor.php';
+include_once '../tool/formatter.php';
+//echo 'versionReport.php';
+
+$paramProject='';
+if (array_key_exists('idProject',$_REQUEST)) {
+  $paramProject=trim($_REQUEST['idProject']);
+};
+  
+$paramProduct='';
+if (array_key_exists('idProduct',$_REQUEST)) {
+  $paramProduct=trim($_REQUEST['idProduct']);
+};
+$paramVersion='';
+if (array_key_exists('idVersion',$_REQUEST)) {
+  $paramVersion=trim($_REQUEST['idVersion']);
+};
+
+$user=$_SESSION['user'];
+  
+  // Header
+$headerParameters="";
+if ($paramProject!="") {
+  $headerParameters.= i18n("colIdProject") . ' : ' . htmlEncode(SqlList::getNameFromId('Project', $paramProject)) . '<br/>';
+}
+if ($paramProduct!="") {
+  $headerParameters.= i18n("colIdProduct") . ' : ' . htmlEncode(SqlList::getNameFromId('Product', $paramProduct)) . '<br/>';
+}
+if ($paramVersion!="") {
+  $headerParameters.= i18n("colVersion") . ' : ' . htmlEncode(SqlList::getNameFromId('Version', $paramVersion)) . '<br/>';
+}
+include "header.php";
+
+$where=getAccesResctictionClause('TestCase',false);
+
+$order="";
+
+if ($paramProject) {
+  $lstProject=array($paramProject=>SqlList::getNameFromId('Project',$paramProject));
+  $where.=" and idProject=".Sql::fmtId($paramProject);
+} else {
+  $lstProject=SqlList::getList('Project','name',null,true);
+  $lstProject[0]='<i>'.i18n('undefinedValue').'</i>';
+}
+
+if ($paramProduct) {
+  $lstProduct=array($paramProduct=>SqlList::getNameFromId('Product',$paramProduct));
+  $where.=" and idProduct=".Sql::fmtId($paramProduct);
+} else {
+  $lstProduct=SqlList::getList('Product','name',null,true);
+  $lstProduct[0]='<i>'.i18n('undefinedValue').'</i>';
+}
+
+if ($paramVersion) {
+  $lstVersion=array($paramVersion=>SqlList::getNameFromId('Version',$paramVersion));
+  $where.=" and idVersion=".Sql::fmtId($paramVersion);
+} else {
+  $lstVersion=SqlList::getList('Version','name',null,true);
+  $lstVersion[0]='<i>'.i18n('undefinedValue').'</i>';
+}
+
+$lstType=SqlList::getList('TestCaseType','name',null,true);
+
+$tc=new TestCase();
+$lst=$tc->getSqlElementsFromCriteria(null, false, $where,'idProject, idProduct, idVersion, id');
+
+if (checkNoData($lst)) exit;
+
+echo '<table style="width:' . ((isset($outMode) and $outMode=='pdf')?'90':'95') . '%" align="center">';
+echo '<tr>';
+echo '<td class="reportTableHeader" style="width:8%"  >' . i18n('colType') . '</td>';
+echo '<td class="reportTableHeader" style="width:2%"  >' . i18n('colId') . '</td>';
+echo '<td class="reportTableHeader" style="width:20%" >' . i18n('TestCase') . '</td>';
+echo '<td class="reportTableHeader" style="width:25%" >' .  i18n('colDescription') . '</td>';
+echo '<td class="reportTableHeader" style="width:20%" >' .  i18n('colPrerequisite') . '</td>';
+echo '<td class="reportTableHeader" style="width:25%" >' .  i18n('colExpectedResult') . '</td>';
+echo '</tr>';
+  
+$product="";
+$project="";
+$version="";
+foreach ($lst as $tc) {
+	if ($tc->idProject!=$project or $tc->idProduct!=$product or $tc->idVersion!=$version) {
+		$product=$tc->idProduct;
+		$project=$tc->idProject;
+		$version=$tc->idVersion;
+		echo '<tr>';
+		echo '<td class="reportTableHeader" colspan="6" style="width:100%"  >' ;
+		echo '<table width="100%"><tr>';
+		if ($tc->idProject) echo '<td width="34%">'.i18n('Project').' : '.$lstProject[$tc->idProject].'</td>'; 
+		else echo '<td width="34%">&nbsp;</td>';
+		if ($tc->idProduct) echo '<td width="33%">'.i18n('Product').' : '.$lstProduct[$tc->idProduct].'</td>';
+		else echo '<td width="33%">&nbsp;</td>';
+		if ($tc->idVersion) echo '<td width="33%">'.i18n('Version').' : '.$lstVersion[$tc->idVersion].'</td>';
+		else echo '<td width="33%">&nbsp;</td>';
+		echo '</tr></table>';
+		echo '</td>';
+		echo '</tr>';
+	}
+  echo '<tr>';
+  echo '<td class="reportTableData" style="width:8%">' . (($tc->idTestCaseType)?$lstType[$tc->idTestCaseType]:'') . '</td>';
+  echo '<td class="reportTableData" style="width:2%">#' . $tc->id . '</td>';
+  echo '<td class="reportTableData" style="text-align:left;width:20%">' . htmlEncode($tc->name) . '</td>';
+  echo '<td class="reportTableData" style="text-align:left;width:25%">' . htmlEncode($tc->description) . '</td>';
+  echo '<td class="reportTableData" style="text-align:left;width:25%">' . htmlEncode($tc->prerequisite) . '</td>';
+  echo '<td class="reportTableData" style="text-align:left;width:25%">' . htmlEncode($tc->result) . '</td>';
+  echo '</tr>';
+}
+echo '</table>';
+echo '<br/>';
