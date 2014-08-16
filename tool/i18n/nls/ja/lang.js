@@ -1,4 +1,4 @@
-﻿{
+{
 aboutMessage: "ProjecQtOrについて",
 aboutMessageLocale: "ロケール",
 aboutMessageWebsite: "ウェブサイト",
