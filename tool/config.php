@@ -172,9 +172,9 @@ $label['crlf04']='crlf';
 // === i18n (internationalization)
 $param['DefaultLocale'] = 'en';                              
 $label['DefaultLocale'] = "Default locale to be used on i18n";
-$value['DefaultLocale'] = "default language, 'en' for English, 'fr' for French, 'de' for German (more locales to come next)";
+$value['DefaultLocale'] = "default language, 'en' for English, 'fr' for French, 'de' for German, es for Spanish, pt for Portuguese, pt-br for Portuguese (Brazil), ru for Russian, zh for Chinese, nl for Dutch, fa for Farsi (Persian), ja for Japanese (more locales to come next)";
 $pname['DefaultLocale'] = 'paramDefaultLocale';
-$ctrls['DefaultLocale'] = '=en=fr=de=es=ru=zh=';
+$ctrls['DefaultLocale'] = '=en=fr=de=es=pt=pt-br=ru=zh=nl=fa=ja=';
 
 $param['DefaultTimezone'] = 'Europe/Paris';                              
 $label['DefaultTimezone'] = "Default time zone";
