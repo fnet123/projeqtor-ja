@@ -59,7 +59,7 @@ if (array_key_exists("objectClass", $_REQUEST)) {
               </td>
             </tr>
           <?php } ?>
-          
+          <?php if (property_exists($objectClass, 'idProject')) { ?>
             <tr>
               <td class="dialogLabel">
                 <label for="dialogMailToProject"><?php echo i18n("colMailToProject") ?>&nbsp;:&nbsp;</label>
@@ -84,6 +84,7 @@ if (array_key_exists("objectClass", $_REQUEST)) {
                 <div id="dialogMailToManager" name="dialogMailToManager" dojoType="dijit.form.CheckBox" type="checkbox" ></div>
               </td>
             </tr>
+          <?php } ?>
             <?php if (property_exists($objectClass, '_Assignment') ) {?>  
              <tr>
               <td class="dialogLabel">

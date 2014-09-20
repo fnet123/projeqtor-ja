@@ -2740,61 +2740,64 @@ abstract class SqlElement {
 	public function sendMailIfMailable($newItem=false, $statusChange=false, $directStatusMail=null,
 	$responsibleChange=false, $noteAdd=false, $attachmentAdd=false,
 	$noteChange=false, $descriptionChange=false, $resultChange=false, $assignmentAdd=false, $assignmentChange=false,
-	$anyChange=false) {	
+	$anyChange=false) {
 		$objectClass=get_class($this);
 		$idProject=($objectClass=='Project')?$this->id:((property_exists($this,'idProject'))?$this->idProject:null);
 		if ($objectClass=='TicketSimple') {$objectClass='Ticket';}
-		if ($objectClass=='History') {
+		if ($objectClass=='History' or $objectClass=='Audit') {
 			return false; // exit : not for History
 		}
-		$mailable=SqlElement::getSingleSqlElementFromCriteria('Mailable', array('name'=>$objectClass));
-		if (! $mailable or ! $mailable->id) {
-			return false; // exit if not mailable object
-		}
-		if (! property_exists($this, 'idStatus')) {
-			return false; // exit if object has not idStatus
-		}
-		if (! $this->idStatus) {
-			return false; // exit if status not set
-		}
-		$crit=array();
-		$crit['idStatus']=$this->idStatus;
-		$crit="idle='0' and idMailable='" . $mailable->id . "' and ( false ";
-		if ($statusChange and $this->idStatus) {
-			$crit.="  or idStatus='" . $this->idStatus . "' ";
-		}
-		if ($responsibleChange) {
-			$crit.=" or idEvent='1' ";
-		}
-		if ($noteAdd) {
-			$crit.=" or idEvent='2' ";
-		}
-		if ($attachmentAdd) {
-			$crit.=" or idEvent='3' ";
-		}
-		if ($noteChange) {
-			$crit.=" or idEvent='4' ";
-		}
-		if ($descriptionChange) {
-			$crit.=" or idEvent='5' ";
-		}
-		if ($resultChange) {
-			$crit.=" or idEvent='6' ";
-		}
-		if ($assignmentAdd) {
-			$crit.=" or idEvent='7' ";
-		}
-		if ($assignmentChange) {
-			$crit.=" or idEvent='8' ";
-		}
-		if ($anyChange) {
-			$crit.=" or idEvent='9' ";
-		}
-		$crit.=")";
-		$statusMail=new StatusMail();
-		$statusMailList=$statusMail->getSqlElementsFromCriteria(null,false, $crit);
 		if ($directStatusMail) { // Direct Send Mail
 			$statusMailList=array($directStatusMail->id => $directStatusMail);
+		} else {
+			
+			$mailable=SqlElement::getSingleSqlElementFromCriteria('Mailable', array('name'=>$objectClass));
+			if (! $mailable or ! $mailable->id) {
+				return false; // exit if not mailable object
+			}
+			
+			if (! property_exists($this, 'idStatus')) {
+				return false; // exit if object has not idStatus
+			}
+			if (! $this->idStatus) {
+				return false; // exit if status not set
+			}
+			$crit=array();
+			$crit['idStatus']=$this->idStatus;
+			$crit="idle='0' and idMailable='" . $mailable->id . "' and ( false ";
+			if ($statusChange and $this->idStatus) {
+				$crit.="  or idStatus='" . $this->idStatus . "' ";
+			}
+			if ($responsibleChange) {
+				$crit.=" or idEvent='1' ";
+			}
+			if ($noteAdd) {
+				$crit.=" or idEvent='2' ";
+			}
+			if ($attachmentAdd) {
+				$crit.=" or idEvent='3' ";
+			}
+			if ($noteChange) {
+				$crit.=" or idEvent='4' ";
+			}
+			if ($descriptionChange) {
+				$crit.=" or idEvent='5' ";
+			}
+			if ($resultChange) {
+				$crit.=" or idEvent='6' ";
+			}
+			if ($assignmentAdd) {
+				$crit.=" or idEvent='7' ";
+			}
+			if ($assignmentChange) {
+				$crit.=" or idEvent='8' ";
+			}
+			if ($anyChange) {
+				$crit.=" or idEvent='9' ";
+			}
+			$crit.=")";
+			$statusMail=new StatusMail();
+			$statusMailList=$statusMail->getSqlElementsFromCriteria(null,false, $crit);
 		}
 		if (count($statusMailList)==0) {
 			return false; // exit not a status for mail sending (or disabled)

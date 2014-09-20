@@ -62,7 +62,9 @@ function refreshImputationList() {
 	dojo.byId('idle').checked=dojo.byId('listShowIdle').checked;
 	dojo.byId('showPlannedWork').checked=dojo.byId('listShowPlannedWork').checked;
 	dojo.byId('hideDone').checked=dojo.byId('listHideDone').checked;
-	dojo.byId('hideNotHandled').checked=dojo.byId('listHideNotHandled').checked;
+	if (dojo.byId('hideNotHandled') && dojo.byId('listHideNotHandled') ) {
+	  dojo.byId('hideNotHandled').checked=dojo.byId('listHideNotHandled').checked;
+	}	
 	dojo.byId('displayOnlyCurrentWeekMeetings').checked=dojo.byId('listDisplayOnlyCurrentWeekMeetings').checked;
 	loadContent('../view/refreshImputationList.php', 'workDiv', 'listForm', false);
 	return true;

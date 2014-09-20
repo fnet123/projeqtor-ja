@@ -139,6 +139,8 @@ if ($type=='habilitation') {
   foreach($_REQUEST as $fld => $val) {
     if (array_key_exists($fld, $parameterList)) {
       $crit['parameterCode']=$fld;
+      $crit['idUser']=null;
+      $crit['idProject']=null;
       $obj=SqlElement::getSingleSqlElementFromCriteria('Parameter', $crit);
       if ($parameterList[$fld]=='time') {
       	$val=substr($val,1,5);
