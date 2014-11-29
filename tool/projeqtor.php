@@ -32,8 +32,8 @@ session_start();
 // === Application data : version, dependencies, about message, ...
 $applicationName="ProjeQtOr"; // Name of the application
 $copyright=$applicationName;  // Copyright to be displayed
-$version="V4.5.0";            // Version of application : Major / Minor / Release
-$build="0107";                // Build number. To be increased on each release
+$version="V4.5.2";            // Version of application : Major / Minor / Release
+$build="0109";                // Build number. To be increased on each release
 $website="http://www.projeqtor.org"; // ProjeQtOr site url
 $aboutMessage='';             // About message to be displayed when clicking on application logo
 $aboutMessage.='<div>' . $applicationName . ' ' . $version . ' ('.($build+0).')</div><br/>';
@@ -1320,7 +1320,7 @@ function securityGetAccessRight($menuName, $accessType, $obj=null, $user=null) {
  */
 function securityGetAccessRightYesNo($menuName, $accessType, $obj=null, $user=null) {
   // ATTENTION, NOT FOR READ ACCESS
-  
+  // traceLog("securityGetAccessRightYesNo($menuName, $accessType, obj, user)");  
 	if (! class_exists(substr($menuName,4))) {
 		errorLog("securityGetAccessRightYesNo : ".substr($menuName,4)." is not an existing object class");
 	}
@@ -1357,6 +1357,7 @@ function securityGetAccessRightYesNo($menuName, $accessType, $obj=null, $user=nu
           }
         } else if (property_exists($obj, 'idProject')) {
         	$limitToActiveProjects=(get_class($obj)=='Affectation')?false:true;
+        	if (isset($_SESSION['projectSelectorShowIdle']) and $_SESSION['projectSelectorShowIdle']==1) $limitToActiveProjects=false;
           if (array_key_exists($obj->idProject, $user->getAffectedProjects($limitToActiveProjects)) or $obj->id==null) {
             $accessRight='YES';
           }

@@ -77,7 +77,7 @@ class User extends SqlElement {
   private static $_fieldsAttributes=array("name"=>"required, truncatedWidth100",
   		                                    "email"=>"truncatedWidth100",
   										                    "isLdap"=>"hidden,forceExport",
-                                          "idProfile"=>"required",
+                                          "idProfile"=>"required, truncatedWidth100",
                                           "loginTry"=>"hidden",
                                           "salt"=>'hidden', 
                                           "crypto"=>'hidden',
@@ -137,9 +137,9 @@ class User extends SqlElement {
 	      self::$_fieldsAttributes["isContact"]="";
 	    }
 	    if ($this->isLdap!=0) {
-	    	self::$_fieldsAttributes["name"]="readonly";
+	    	self::$_fieldsAttributes["name"]="readonly, truncatedWidth100";
 	    	//self::$_fieldsAttributes["resourceName"]="readonly";
-	    	self::$_fieldsAttributes["email"]="readonly";
+	    	self::$_fieldsAttributes["email"]="readonly, truncatedWidth100";
 	    	self::$_fieldsAttributes["password"]="hidden";
 	    }
   	}
@@ -252,7 +252,7 @@ class User extends SqlElement {
    *  must be redefined in the inherited class
    */
   public function drawSpecificItem($item){
-    global $print, $outMode;
+    global $print, $outMode, $largeWidth;
     $result="";
     if ($item=='buttonSendMail') {
       if ($print) {
@@ -294,7 +294,7 @@ class User extends SqlElement {
           $result.='<td class="label">'.i18n('colPhoto').'&nbsp;:&nbsp;</td>';
           $result.='<td>&nbsp;&nbsp;';
           $result.='<img src="css/images/smallButtonRemove.png" onClick="removeAttachement('.$image->id.');" title="'.i18n('removePhoto').'" class="smallButton"/>';         
-        	$horizontal='right:51%';
+        	$horizontal='left:'.($largeWidth+75).'px';
     	    $top='30px';
     	  } else {
     	  	if ($outMode=='pdf') {
@@ -317,11 +317,12 @@ class User extends SqlElement {
           $image->delete();
         }
         if (!$print) {
+        	$horizontal='left:'.($largeWidth+75).'px';
           $result.='<tr style="height:20px;">';
           $result.='<td class="label">'.i18n('colPhoto').'&nbsp;:&nbsp;</td>';
           $result.='<td>&nbsp;&nbsp;';
           $result.='<img src="css/images/smallButtonAdd.png" onClick="addAttachement(\'file\');" title="'.i18n('addPhoto').'" class="smallButton"/> ';
-          $result.='<div style="position: absolute; top:30px;right:51%; width:80px;height:80px;border: 1px solid grey;color: grey;font-size:80%; text-align:center;cursor: pointer;" '
+          $result.='<div style="position: absolute; top:30px;'.$horizontal.'; width:80px;height:80px;border: 1px solid grey;color: grey;font-size:80%; text-align:center;cursor: pointer;" '
               .' onClick="addAttachement(\'file\');" title="'.i18n('addPhoto').'">'
               . i18n('addPhoto').'</div>';
           $result.='</td>';

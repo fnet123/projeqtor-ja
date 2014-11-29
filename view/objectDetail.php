@@ -45,7 +45,7 @@ $readOnly=false;
  */
 function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 	global $cr, $print, $treatedObjects, $displayWidth, $outMode, $comboDetail, 
-	 $collapsedList,$printWidth, $detailWidth, $readOnly;
+	 $collapsedList,$printWidth, $detailWidth, $readOnly, $largeWidth;
 	/*if ($print===null) {
 	 $print=$_REQUEST['print'];
 	 }
@@ -2151,6 +2151,15 @@ function drawAssignmentsFromObject($list, $obj, $refresh=false) {
 	$fmt = new NumberFormatter52( $browserLocale, NumberFormatter52::DECIMAL );
 	foreach($list as $assignment) {
 		echo '<tr>';
+		$isResource=true;
+		$resName=SqlList::getNameFromId('Resource', $assignment->idResource);
+		if ($resName==$assignment->idResource) {
+			$affName=SqlList::getNameFromId('Affectable', $assignment->idResource);
+			if ($affName!=$resName) {		
+				$isResource=false;
+				$resName=$affName;
+			}
+		}
 		if (! $print and $canUpdate) {
 			echo '<td class="assignData" style="text-align:center;">';
 			if ($canUpdate and ! $print and $workVisible) {
@@ -2172,7 +2181,7 @@ function drawAssignmentsFromObject($list, $obj, $refresh=false) {
 				echo '  <img src="css/images/smallButtonRemove.png" '
 				. 'onClick="removeAssignment(' . "'" . $assignment->id . "','"
 				. Work::displayWork($assignment->realWork)*100 . "','"
-				. htmlEncode(SqlList::getNameFromId('Resource', $assignment->idResource),'quotes')  . "'" . ');" '
+				. htmlEncode($resName,'quotes')  . "'" . ');" '
 				. 'title="' . i18n('removeAssignment') . '" class="smallButton"/> ';
 			}
 			echo '</td>';
@@ -2182,11 +2191,11 @@ function drawAssignmentsFromObject($list, $obj, $refresh=false) {
 		echo '>';
 		echo '<table><tr>';
 		$goto="";
-		if (!$print and securityCheckDisplayMenu(null,'Resource')
+		if (!$print and $isResource and securityCheckDisplayMenu(null,'Resource')
 		and securityGetAccessRightYesNo('menuResource', 'read', '')=="YES") {
 			$goto=' onClick="gotoElement(\'Resource\',\'' . $assignment->idResource . '\');" style="cursor: pointer;" ';
 		}
-		echo '<td '. $goto .'>' . SqlList::getNameFromId('Resource', $assignment->idResource);
+		echo '<td '. $goto .'>' . $resName;
 		echo ($assignment->idRole)?' ('.SqlList::getNameFromId('Role', $assignment->idRole).')':'';
 		echo '</td>';
 		if ($assignment->comment and ! $print) {
@@ -2372,12 +2381,12 @@ function drawVersionProjectsFromObject($list, $obj, $refresh=false) {
 		echo '</td>';
 	}
 	if ($idProj) {
-		echo '<td class="assignHeader" style="width:' . (($print)?'50':'40') . '%">' . i18n('colIdVersion') . '</td>';
+		echo '<td class="assignHeader" style="width:' . (($print)?'60':'50') . '%">' . i18n('colIdVersion') . '</td>';
 	} else {
-		echo '<td class="assignHeader" style="width:' . (($print)?'50':'40') . '%">' . i18n('colIdProject') . '</td>';
+		echo '<td class="assignHeader" style="width:' . (($print)?'60':'50') . '%">' . i18n('colIdProject') . '</td>';
 	}
-	echo '<td class="assignHeader" style="width:20%">' . i18n('colStartDate'). '</td>';
-	echo '<td class="assignHeader" style="width:20%">' . i18n('colEndDate'). '</td>';
+	echo '<td class="assignHeader" style="width:15%">' . i18n('colStartDate'). '</td>';
+	echo '<td class="assignHeader" style="width:15%">' . i18n('colEndDate'). '</td>';
 	echo '<td class="assignHeader" style="width:10%">' . i18n('colIdle'). '</td>';
 
 	echo '</tr>';
@@ -2453,7 +2462,7 @@ function drawAffectationsFromObject($list, $obj, $type, $refresh=false) {
 	}
 
 	if (! $print) {
-		echo '<td class="assignHeader" style="width:5%">';
+		echo '<td class="assignHeader" style="width:10%">';
 		if ($obj->id!=null and ! $print and $canCreate and !$obj->idle) {
 			echo '<img src="css/images/smallButtonAdd.png" ' .
            ' onClick="addAffectation(\'' . get_class($obj) . '\',\'' . $type . '\',\''. $idRess . '\', \'' . $idProj . '\');" title="' . i18n('addAffectation') . '" class="smallButton"/> ';
@@ -2461,7 +2470,7 @@ function drawAffectationsFromObject($list, $obj, $type, $refresh=false) {
 		echo '</td>';
 	}
 	echo '<td class="assignHeader" style="width:5%">' . i18n('colId') . '</td>';
-	echo '<td class="assignHeader" style="width:' . (($print)?'50':'45') . '%">' . i18n('colId'.$type) . '</td>';
+	echo '<td class="assignHeader" style="width:' . (($print)?'55':'45') . '%">' . i18n('colId'.$type) . '</td>';
 	echo '<td class="assignHeader" style="width:15%">' . i18n('colStartDate') . '</td>';
 	echo '<td class="assignHeader" style="width:15%">' . i18n('colStartDate') . '</td>';
 	echo '<td class="assignHeader" style="width:10%">' . i18n('colRate'). '</td>';
@@ -2472,17 +2481,24 @@ function drawAffectationsFromObject($list, $obj, $type, $refresh=false) {
 		$canUpdate=securityGetAccessRightYesNo('menuAffectation', 'update',$aff)=="YES";
 		$canDelete=securityGetAccessRightYesNo('menuAffectation', 'delete',$aff)=="YES";
 		if ($obj->idle==1) {
-	    $canUpdate=false;
-	    $canCreate=false;
-	    $canDelete=false;
-	  }
+		    $canUpdate=false;
+		    $canCreate=false;
+		    $canDelete=false;
+		}
 		$idleClass=($aff->idle)?' idleClass':'';
+		$isResource=true;
 		if ($type=='Project') {
 			$name=SqlList::getNameFromId($type, $aff->idProject);
 		} else {
 			$name=SqlList::getNameFromId($type, $aff->idResource);
+			if ($aff->idResource==$name and $type=='Resource') {
+				$name=SqlList::getNameFromId('User', $aff->idResource);
+				if ($aff->idResource!=$name and trim($name)) {
+					$name.=" (".i18n('User').")";
+				}
+			}
 		}
-		if ($aff->idResource!=$name) {
+		if ($aff->idResource!=$name and trim($name)) {
 			echo '<tr>';
 			if (! $print) {
 				echo '<td class="assignData'.$idleClass.'" style="text-align:center;white-space: nowrap;">';
@@ -2519,9 +2535,9 @@ function drawAffectationsFromObject($list, $obj, $type, $refresh=false) {
 			}
 			echo '<td class="assignData'.$idleClass.'" align="center">' . $aff->id . '</td>';
 			if ($idProj) {
-				echo '<td class="assignData'.$idleClass.'" align="left"' . $goto . '>' . htmlEncode(SqlList::getNameFromId($type, $aff->idResource)) . '</td>';
+				echo '<td class="assignData'.$idleClass.'" align="left"' . $goto . '>' . htmlEncode($name) . '</td>';
 			} else {
-				echo '<td class="assignData'.$idleClass.'" align="left"' . $goto . '>' . htmlEncode(SqlList::getNameFromId('Project', $aff->idProject)) . '</td>';
+				echo '<td class="assignData'.$idleClass.'" align="left"' . $goto . '>' . htmlEncode($name) . '</td>';
 			}
 			echo '<td class="assignData'.$idleClass.'" align="center" style="white-space: nowrap;">' . htmlFormatDate($aff->startDate) . '</td>';
 			echo '<td class="assignData'.$idleClass.'" align="center" style="white-space: nowrap;">' . htmlFormatDate($aff->endDate) . '</td>';
@@ -2533,6 +2549,7 @@ function drawAffectationsFromObject($list, $obj, $type, $refresh=false) {
 	echo '</table></td></tr>';
 	echo '</table>';
 }
+
 
 function drawTestCaseRunFromObject($list, $obj, $refresh=false) {
 	global $cr, $print, $user, $browserLocale, $comboDetail;

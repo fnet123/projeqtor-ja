@@ -415,7 +415,7 @@ class Resource extends SqlElement {
    *  must be redefined in the inherited class
    */
   public function drawSpecificItem($item){
-  	global $comboDetail, $print, $outMode;
+  	global $comboDetail, $print, $outMode, $largeWidth;
     $result="";
     if ($item=='affectations') {
       $aff=new Affectation();
@@ -438,7 +438,7 @@ class Resource extends SqlElement {
     		  $result.='<td class="label">'.i18n('colPhoto').'&nbsp;:&nbsp;</td>';
     	    $result.='<td>&nbsp;&nbsp;';
     	    $result.='<img src="css/images/smallButtonRemove.png" onClick="removeAttachement('.$image->id.');" title="'.i18n('removePhoto').'" class="smallButton"/>';
-    	    $horizontal='right:51%';
+    	    $horizontal='left:'.($largeWidth+75).'px';
     	    $top='30px';
     	  } else {
     	  	if ($outMode=='pdf') {
@@ -460,11 +460,12 @@ class Resource extends SqlElement {
       		$image->delete();
       	}
       	if (!$print) {
+      		$horizontal='left:'.($largeWidth+75).'px';
 	    		$result.='<tr style="height:20px;">';
 	        $result.='<td class="label">'.i18n('colPhoto').'&nbsp;:&nbsp;</td>';
 	        $result.='<td>&nbsp;&nbsp;';
 	        $result.='<img src="css/images/smallButtonAdd.png" onClick="addAttachement(\'file\');" title="'.i18n('addPhoto').'" class="smallButton"/> ';
-	        $result.='<div style="position: absolute; top:30px; right:51%; width:80px;height:80px;border: 1px solid grey;color: grey;font-size:80%; text-align:center;cursor: pointer;" '
+	        $result.='<div style="position: absolute; top:30px; '.$horizontal.'; width:80px;height:80px;border: 1px solid grey;color: grey;font-size:80%; text-align:center;cursor: pointer;" '
 	            .' onClick="addAttachement(\'file\');" title="'.i18n('addPhoto').'">'
 	            . i18n('addPhoto').'</div>';
 	        $result.='</td>';
