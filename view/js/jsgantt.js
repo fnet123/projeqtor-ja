@@ -1,5 +1,6 @@
+/*** COPYRIGHT NOTICE *********************************************************
 /*
-=> Closing Sub 2 or Sub 2.2 or Act 2.2 : OKCopyright (c) 2009, Shlomy Gantz BlueBrick Inc. All rights reserved.
+* Copyright (c) 2009, Shlomy Gantz BlueBrick Inc. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -22,7 +23,29 @@
 * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+* 
+* =============================================================================
+* 
+* This file has bee adapted and is part of ProjeQtOr.
+* 
+* ProjeQtOr is free software: you can redistribute it and/or modify it under 
+* the terms of the GNU General Public License as published by the Free 
+* Software Foundation, either version 3 of the License, or (at your option) 
+* any later version.
+* 
+* ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+* FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+* more details.
+*
+* You should have received a copy of the GNU General Public License along with
+* ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+*
+* You can get complete code of ProjeQtOr, other resource, help and information
+* about contributors at http://www.projeqtor.org 
+*     
+*** DO NOT REMOVE THIS NOTICE ************************************************/
+
 
 /**
  * JSGantt component is a UI control that displays gantt charts based by using
@@ -494,7 +517,8 @@ JSGantt.GanttChart =  function(pGanttVar, pDiv, pFormat) {
       }
       vMinDate.setHours(0, 0, 0, 0);
       vMaxDate.setHours(23, 59, 59, 0);
-      vNumDays = (Date.parse(vMaxDate) - Date.parse(vMinDate)) / ( 24 * 60 * 60 * 1000);
+      //must remove 1 hour in case of Winter / Summer Time Change Ticket #1550
+      vNumDays = (Date.parse(vMaxDate) - Date.parse(vMinDate) - 1000*60*60) / ( 24 * 60 * 60 * 1000); 
       vNumDays = Math.ceil(vNumDays);
       vNumUnits = vNumDays / vColUnit;
       vNumUnits=Math.round(vNumUnits);
@@ -628,7 +652,7 @@ JSGantt.GanttChart =  function(pGanttVar, pDiv, pFormat) {
           + '</td></tr></table>'
           +'</span>'
           +'</TD>'
-          +'<TD class="ganttName ganttAlignLeft" style="width: ' + vNameWidth + 'px;" nowrap >';
+          +'<TD class="ganttName ganttAlignLeft" style="width: ' + vNameWidth + 'px;" nowrap title="' + vTaskList[i].getName() + '">';
         vLeftTable+='<div class="ganttLeftHover" style="width:'+(vLeftWidth-25)+'px;" '
             + ' onclick=JSGantt.taskLink("' + vTaskList[i].getLink() + '"); '
         	+ ' onMouseover=JSGantt.ganttMouseOver(' + vID + ',"left","' + vRowType + '")'
@@ -663,7 +687,7 @@ JSGantt.GanttChart =  function(pGanttVar, pDiv, pFormat) {
         vLeftTable +='</td><td>';
         var nameLeftWidth= vNameWidth - 16 - levlWidth - 18 ;
         vLeftTable += '<div style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; '
-          +'width:'+ nameLeftWidth +'px;" class="namePart' + vRowType + '"><NOBR>' + vTaskList[i].getName() + '</NOBR></div>' ;
+        	+'width:'+ nameLeftWidth +'px;" class="namePart' + vRowType + '"><NOBR>' + vTaskList[i].getName() + '</NOBR></div>' ;
         vLeftTable +='</td></tr></table></div>';
         vLeftTable +='</TD>';
         for (iSort=0;iSort<sortArray.length;iSort++) {
@@ -1601,7 +1625,7 @@ JSGantt.formatDateStr = function(pDate,pFormatStr, vMonthArray) {
   var vDateStr = "";  
   switch(pFormatStr) {
     case 'default':
-      return dojo.date.locale.format(pDate, {formatLength: "short", fullYear: true, selector: "date"});
+      return dojo.date.locale.format(pDate, {datePattern: browserLocaleDateFormatJs, formatLength: "short", fullYear: true, selector: "date"});
     case 'mm/dd/yyyy':
       return( vMonthStr + '/' + vDayStr + '/' + vYear4Str );
     case 'dd/mm/yyyy':
@@ -2073,6 +2097,7 @@ function setGanttVisibility(g) {
 	g.setSortArray(planningColumnOrder);
 }
 JSGantt.ganttMouseOver = function( pID, pPos, pType) {
+  if (!g) return;
   if (! pType) {
 	vTaskList=g.getList();	
 	if( vTaskList[pID].getGroup()) {	
@@ -2099,6 +2124,7 @@ JSGantt.ganttMouseOver = function( pID, pPos, pType) {
 };
 
 JSGantt.ganttMouseOut = function(pID, pPos, pType) {
+  if (!g) return;
   if (! pType) {
 	vTaskList=g.getList();	
 	if( vTaskList[pID].getGroup()) {	
@@ -2119,11 +2145,13 @@ JSGantt.ganttMouseOut = function(pID, pPos, pType) {
 
 ongoingJsLink=-1;
 JSGantt.startLink = function (idRow) {
+	if (!g) return;
 	vTaskList=g.getList();
 	document.body.style.cursor="url('css/images/dndLink.png'),help";
 	ongoingJsLink=idRow;
 };
 JSGantt.endLink = function (idRow) {
+	if (!g) return;
 	vTaskList=g.getList();
 	document.body.style.cursor='default';
 	if (ongoingJsLink>=0 && idRow!=ongoingJsLink) {
@@ -2147,6 +2175,7 @@ JSGantt.endLink = function (idRow) {
 	ongoingJsLink=-1;
 };
 JSGantt.cancelLink = function (idRow) {
+	if (!g) return;
 	vTaskList=g.getList();
 	document.body.style.cursor='default';
 	if (idRow) {

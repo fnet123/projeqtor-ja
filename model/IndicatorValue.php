@@ -1,4 +1,29 @@
 <?php 
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * RiskType defines the type of a risk.
  */ 
@@ -185,7 +210,9 @@ class IndicatorValue extends SqlElement {
   	}
   	$this->warningTargetValue=$this->targetValue*$def->warningValue/100;
   	$this->alertTargetValue=$this->targetValue*$def->alertValue/100;
-  	if ($value>$this->warningTargetValue) {
+  	$targetValue=floatval($this->targetValue);
+  	$value=floatval($value);
+  	if ($value>$this->warningTargetValue and $targetValue) { // V4.5.0 : raise warning only if target value is set
   		if (! $this->warningSent) {
         $this->sendWarning();
         $this->warningSent='1';  
@@ -193,7 +220,7 @@ class IndicatorValue extends SqlElement {
   	} else {
   		$this->warningSent='0';  
   	}
-    if ($value>$this->alertTargetValue) {
+    if ($value>$this->alertTargetValue and $targetValue) { // V4.5.0 : raise alert only if target value is set
     	if (! $this->alertSent) {
         $this->sendAlert();
         $this->alertSent='1';
@@ -202,7 +229,7 @@ class IndicatorValue extends SqlElement {
     	$this->alertSent='0';
     }
     if ($obj->done) {
-      if ($value>$this->targetValue) {
+      if ($value>$targetValue) {
       	$this->status="KO";
       } else {
       	$this->status="OK";
@@ -474,7 +501,7 @@ class IndicatorValue extends SqlElement {
     
     $title=ucfirst(i18n($type)) .' - '. $item . ' #' . $id; 
     $message='<table>';
-    $message.='<tr><td colspan="3" style="border:1px solid grey">' . htmlEncode($name) . '</td></tr>';
+    $message.='<tr><td colspan="3" style="border:1px solid grey; cursor:pointer;" onClick="gotoElement(\''.get_class($obj).'\','.$obj->id.');">' . htmlEncode($name) . '</td></tr>';
     $message.='<tr><td width="35%" align="right" valign="top">' . i18n('colIdIndicator') . '</td><td valign="top">&nbsp;:&nbsp;</td><td valign="top">' . $indicator . '</td>';
     $message.='<tr><td width="35%" align="right">' . i18n('targetValue') . '</td><td>&nbsp;:&nbsp;</td><td>' . $target . '</td>';
     $message.=($warningTarget and $type=="WARNING")?'<tr><td width="35%" align="right">' . i18n('warningValue') . '</td><td>&nbsp;:&nbsp;</td><td>' . $warningTarget . '</td>':'';

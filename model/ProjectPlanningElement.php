@@ -1,4 +1,29 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * Planning element is an object included in all objects that can be planned.
  */ 
@@ -96,6 +121,7 @@ class ProjectPlanningElement extends PlanningElement {
     "realDuration"=>"readonly,noImport",
     "initialWork"=>"hidden,noImport",
     "plannedWork"=>"readonly,noImport",
+  	"notPlannedWork"=>"hidden",
     "realWork"=>"readonly,noImport",
     "leftWork"=>"readonly,noImport",
     "assignedWork"=>"readonly,noImport",
@@ -153,7 +179,53 @@ class ProjectPlanningElement extends PlanningElement {
   	$this->totalValidatedCost=$this->validatedCost+$this->expenseValidatedAmount;
   }
   
-  public function updateExpense() {
+  protected function updateSynthesisObj ($doNotSave=false) {
+  	$this->updateSynthesisProject($doNotSave);
+  }
+  protected function updateSynthesisProject ($doNotSave=false) {
+  	parent::updateSynthesisObj(true); // Will update work and resource cost, but not save yet ;)
+  	$this->updateExpense(true); // Will retrieve expense directly on the project
+  	$consolidateValidated=Parameter::getGlobalParameter('consolidateValidated');
+  	$this->_noHistory=true;
+  	// Add expense data from other planningElements
+  	$validatedExpense=0;
+  	$assignedExpense=0;
+  	$plannedExpense=0;
+  	$realExpense=0;
+  	$leftExpense=0;
+  	if (! $this->elementary) {
+  		$critPla=array("topId"=>$this->id);
+  		$planningElement=new ProjectPlanningElement();
+  		$plaList=$planningElement->getSqlElementsFromCriteria($critPla, false);
+  		// Add data from other planningElements dependant from this one
+  		foreach ($plaList as $pla) {  			
+  			if (!$pla->cancelled and $pla->expenseValidatedAmount) $validatedExpense+=$pla->expenseValidatedAmount;
+  			if (!$pla->cancelled and $pla->expenseAssignedAmount) $assignedExpense+=$pla->expenseAssignedAmount;
+  			if (!$pla->cancelled and $pla->expensePlannedAmount) $plannedExpense+=$pla->expensePlannedAmount;
+  		  $realExpense+=$pla->expenseRealAmount;
+  			if (!$pla->cancelled and $pla->expenseLeftAmount) $leftExpense+=$pla->expenseLeftAmount;
+  		}
+  	}
+  	// save cumulated data
+  	$this->expenseAssignedAmount+=$assignedExpense;
+  	$this->expensePlannedAmount+=$plannedExpense;
+  	$this->expenseRealAmount+=$realExpense;
+  	$this->expenseLeftAmount+=$leftExpense;
+  	if ($consolidateValidated=="ALWAYS") {
+  		$this->expenseValidatedAmount=$validatedExpense;
+  	} else if ($consolidateValidated=="IFSET") {
+  		if ($validatedExpense) {
+  			$this->expenseValidatedAmount=$validatedExpense;
+  		}
+  	}
+  	$this->save();
+  	// Dispath to top element
+  	if ($this->topId) {
+  		self::updateSynthesis($this->topRefType, $this->topRefId);
+  	}
+  }
+  
+  public function updateExpense($doNotSave=false) {
   	$exp=new Expense();
   	$lstExp=$exp->getSqlElementsFromCriteria(array('idProject'=>$this->refId));
   	$assigned=0;
@@ -178,7 +250,12 @@ class ProjectPlanningElement extends PlanningElement {
   	$this->expensePlannedAmount=$planned;
   	$this->expenseRealAmount=$real;
   	$this->updateTotal();
-  	$this->simpleSave();
+  	if (! $doNotSave) {
+  		$this->simpleSave();
+  		if ($this->topId) {
+  			self::updateSynthesis($this->topRefType, $this->topRefId);
+  		}
+  	}
   }
   /** ==========================================================================
    * Return the specific fieldsAttributes

@@ -1,4 +1,29 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * Planning element is an object included in all objects that can be planned.
  */ 
@@ -50,6 +75,7 @@ class PlanningElement extends SqlElement {
   public $_costVisibility;
   public $idBill;
   public $validatedCalculated;
+  public $notPlannedWork;
 
   private static $_fieldsAttributes=array(
                                   "id"=>"hidden",
@@ -72,6 +98,7 @@ class PlanningElement extends SqlElement {
                                   "plannedEndDate"=>"readonly,noImport",
                                   "plannedDuration"=>"readonly,noImport",
                                   "plannedWork"=>"readonly,noImport",
+  								  "notPlannedWork"=>"hidden",
                                   "realStartDate"=>"readonly,noImport",
                                   "realEndDate"=>"readonly,noImport",
                                   "realDuration"=>"readonly,noImport",
@@ -407,12 +434,17 @@ class PlanningElement extends SqlElement {
     	  }
       }
     }
-    
+    if ($old->topId!=$this->topId) {
+    	$pe=new PlanningElement($old->topId);
+    	$pe->renumberWbs();
+    }
     return $result;
   }
   
   public function simpleSave() {
     $this->plannedDuration=workDayDiffDates($this->plannedStartDate, $this->plannedEndDate);
+    $this->validatedDuration=workDayDiffDates($this->validatedStartDate, $this->validatedEndDate);
+    $this->initialDuration=workDayDiffDates($this->initialStartDate, $this->initialEndDate);
     $result = parent::save();
   }
 
@@ -452,12 +484,13 @@ class PlanningElement extends SqlElement {
    * @param $col the nale of the property
    * @return a boolean 
    */
-  private function updateSynthesisObj () {
+  protected function updateSynthesisObj ($doNotSave=false) {
   	$consolidateValidated=Parameter::getGlobalParameter('consolidateValidated');
   	$this->validatedCalculated=0;
     $assignedWork=0;
     $leftWork=0;
     $plannedWork=0;
+    $notPlannedWork=0;
     $realWork=0;
     $validatedWork=0;
     $assignedCost=0;
@@ -465,6 +498,7 @@ class PlanningElement extends SqlElement {
     $plannedCost=0;
     $realCost=0;
     $validatedCost=0;
+    $validatedExpense=0;
     $this->_noHistory=true;
     // Add data from assignments directly linked to this item
     $critAss=array("refType"=>$this->refType, "refId"=>$this->refId);
@@ -481,6 +515,7 @@ class PlanningElement extends SqlElement {
     	$assignedWork+=$ass->assignedWork;
       $leftWork+=$ass->leftWork;
       $plannedWork+=$ass->plannedWork;
+      $notPlannedWork+=$ass->notPlannedWork;
       $realWork+=$ass->realWork;
       if ($ass->assignedCost) $assignedCost+=$ass->assignedCost;
       if ($ass->leftCost) $leftCost+=$ass->leftCost;
@@ -509,6 +544,7 @@ class PlanningElement extends SqlElement {
         $assignedWork+=$pla->assignedWork;
         $leftWork+=$pla->leftWork;
         $plannedWork+=$pla->plannedWork;
+        $notPlannedWork+=$pla->notPlannedWork;
         $realWork+=$pla->realWork;
         if (!$pla->cancelled and $pla->assignedCost) $assignedCost+=$pla->assignedCost;
         if (!$pla->cancelled and $pla->leftCost) $leftCost+=$pla->leftCost;
@@ -547,6 +583,7 @@ class PlanningElement extends SqlElement {
     $this->assignedWork=$assignedWork;
     $this->leftWork=$leftWork;
     $this->plannedWork=$plannedWork;
+    $this->notPlannedWork=$notPlannedWork;
     $this->realWork=$realWork;
     $this->assignedCost=$assignedCost;
     $this->leftCost=$leftCost;
@@ -565,14 +602,14 @@ class PlanningElement extends SqlElement {
     		$this->validatedCost=$validatedCost;
     		$this->validatedCalculated=1;
     	}
-    	
     } 
-    $this->save();
-    // Dispath to top element
-    if ($this->topId) {
-        self::updateSynthesis($this->topRefType, $this->topRefId);
+    if (! $doNotSave) {
+	    $this->save();
+	    // Dispath to top element
+	    if ($this->topId) {
+	        self::updateSynthesis($this->topRefType, $this->topRefId);
+	    }
     }
-    
   }
   
    /** =========================================================================
@@ -583,9 +620,17 @@ class PlanningElement extends SqlElement {
    */
   public static function updateSynthesis ($refType, $refId) {
     $crit=array("refType"=>$refType, "refId"=>$refId);
-    $obj=SqlElement::getSingleSqlElementFromCriteria('PlanningElement', $crit);
+    $obj=SqlElement::getSingleSqlElementFromCriteria($refType.'PlanningElement', $crit);
+    if (! $obj or ! $obj->id) {
+      $obj=SqlElement::getSingleSqlElementFromCriteria('PlanningElement', $crit);
+    }
     if ($obj) {
-      return $obj->updateSynthesisObj();
+    	$method='updateSynthesis'.$refType;
+    	if (method_exists($obj,$method )) {
+    		return $obj->$method();
+    	} else {
+        return $obj->updateSynthesisObj();
+    	}
     }
   } 
   
@@ -931,6 +976,26 @@ class PlanningElement extends SqlElement {
   	return $result;
   }
   
+  public function renumberWbs() {
+  	if ($this->id) {
+  		$where="topRefType='" . $this->refType . "' and topRefId=" . Sql::fmtId($this->refId) ;
+  	} else {
+  		$where="refType is null and refId is null";
+  	}
+  	$order="wbsSortable asc";
+  	$list=$this->getSqlElementsFromCriteria(null,false,$where,$order);
+  	$idx=0;
+  	$currentIdx=0;
+  	foreach ($list as $pe) {
+  			$idx++;
+  			$root=substr($pe->wbs,0,strrpos($pe->wbs,'.'));
+  			$pe->wbs=($root=='')?$idx:$root.'.'.$idx;
+  			if ($pe->refType) {
+  				$pe->save();
+  			}
+  	}
+  }
+  
   public function setVisibility() {
     if (self::$staticCostVisibility and self::$staticWorkVisibility) {
       $this->_costVisibility=self::$staticCostVisibility ;
@@ -963,33 +1028,30 @@ class PlanningElement extends SqlElement {
       $this->setVisibility();
     }
     if ($this->_costVisibility =='NO') {
-      if ($fieldName=='validatedCost' or $fieldName=='assignedCost'
-       or $fieldName=='plannedCost' or $fieldName=='leftCost' 
-       or $fieldName=='realCost') {
+      if (substr($fieldName,-4)=='Cost'
+       or substr($fieldName,0,7)=='expense'
+       or substr($fieldName,0,5)=='total') {
          return 'hidden';
       }
     } else if ($this->_costVisibility =='VAL') {
-      if ($fieldName=='assignedCost'
-       or $fieldName=='plannedCost' or $fieldName=='leftCost' 
-       or $fieldName=='realCost') {
+      if ( (substr($fieldName,-4)=='Cost' and $fieldName!='validatedCost')
+       or (substr($fieldName,0,7)=='expense' and $fieldName!='expenseValidatedAmount')
+       or (substr($fieldName,0,5)=='total' and $fieldName!='totalValidatedCost')) {
          return 'hidden';
       }
     }
     if ($this->_workVisibility=='NO') {
-      if ($fieldName=='validatedWork' or $fieldName=='assignedWork'
-       or $fieldName=='plannedWork' or $fieldName=='leftWork' 
-       or $fieldName=='realWork') {
+      if (substr($fieldName,-4)=='Work') {
          return 'hidden';
       }
     } else if ($this->_workVisibility=='VAL') {
-      if ($fieldName=='assignedWork'
-       or $fieldName=='plannedWork' or $fieldName=='leftWork' 
-       or $fieldName=='realWork') {
+      if ( substr($fieldName,-4)=='Work' and $fieldName!='validatedWork') {
          return 'hidden';
       }
     }
     if ($this->id and $this->validatedCalculated) {
-    	if ($fieldName=='validatedWork' or $fieldName=='validatedCost') {
+    	if ($fieldName=='validatedWork' or $fieldName=='validatedCost'
+        or ($fieldName=='expenseValidatedAmount' and $this->$fieldName>0)) {
     	  return "readonly";
     	}
     }

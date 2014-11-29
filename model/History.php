@@ -1,4 +1,29 @@
 <?php 
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * History reflects all changes to any object.
  */ 
@@ -51,6 +76,9 @@ class History extends SqlElement {
     $hist=new History();
     // Attention : History fields are not to be escaped by Sql::str because $olValue and $newValue have already been escaped
     // So other fiels (names) must be manually "quoted"
+    if ($refType=='PlanningElement' and $obj and isset($obj->refType)) {
+    	$refType=$obj->refType.'PlanningElement';
+    }
     $hist->refType=$refType;
     if ($refType=='TicketSimple') {
       $hist->refType='Ticket';
@@ -58,8 +86,13 @@ class History extends SqlElement {
     $hist->refId=$refId;
     $hist->operation=$operation;
     $hist->colName=$colName;
-    $hist->oldValue=$oldValue;
-    $hist->newValue=$newValue;
+    if ($colName and strtolower(substr($obj->getDataType($colName),-4))=='text') {
+    	$hist->oldValue=mb_substr($oldValue,0,$hist->getDataLength('oldValue'),'UTF-8');
+    	$hist->newValue=mb_substr($newValue,0,$hist->getDataLength('newValue'),'UTF-8');
+    } else {
+    	$hist->oldValue=$oldValue;
+    	$hist->newValue=$newValue;
+    }
     $hist->idUser=$user->id;
     $returnValue=$hist->save();
     // For TestCaseRun : store history for TestSession 

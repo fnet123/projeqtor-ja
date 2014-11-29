@@ -1,4 +1,29 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * Planning element is an object included in all objects that can be planned.
  */  
@@ -85,6 +110,7 @@ class ActivityPlanningElement extends PlanningElement {
     "realDuration"=>"readonly,noImport",
     "initialWork"=>"hidden",
     "plannedWork"=>"readonly,noImport",
+  	"notPlannedWork"=>"hidden",
     "realWork"=>"readonly,noImport",
     "leftWork"=>"readonly,noImport",
     "assignedWork"=>"readonly,noImport",
@@ -201,10 +227,12 @@ class ActivityPlanningElement extends PlanningElement {
   	$this->workElementEstimatedWork=0;
   	$this->workElementRealWork=0;
   	$this->workElementLeftWork=0;
+  	$this->workElementCount=0;
   	foreach ($weList as $we) {
   		$this->workElementEstimatedWork+=$we->plannedWork;
   		$this->workElementRealWork+=$we->realWork;
   		$this->workElementLeftWork+=$we->leftWork;
+  		$this->workElementCount+=1;
   	}
   	$this->simpleSave();
   }

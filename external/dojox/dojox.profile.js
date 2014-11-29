@@ -58,7 +58,7 @@ var profile = (function(){
 			},
 
 			miniExclude: function(filename, mid){
-				return /\/demos\//.test(mid);
+				return 0;
 			}
 		}
 	};

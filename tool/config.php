@@ -1,4 +1,29 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 // ==================================================================================================
 // This file includes all specific parameters for ProjeQtOr application
 // Automatic configuration at first run
@@ -318,6 +343,7 @@ $ctrls['logLevel'] = '=4=3=2=1=0=';
     dojo.addOnLoad(function(){
       currentLocale="<?php echo $currentLocale?>";
       saveResolutionToSession();
+      userBrowserLocaleForDates="";
       saveBrowserLocaleToSession();
       dijit.Tooltip.defaultPosition=["below","right"];
       //dojo.byId('login').focus();
@@ -332,7 +358,7 @@ $ctrls['logLevel'] = '=4=3=2=1=0=';
   </script>
 </head>
 
-<body id="body" class="ProjeQtOr" onLoad="hideWait();" style="overflow: auto; ">
+<body id="body" class="tundra ProjeQtOr" onLoad="hideWait();" style="overflow: auto; ">
   <div id="waitLogin" >
   </div> 
   <table align="left" valign="top" width="100%" height="100%" class="background">
@@ -345,7 +371,7 @@ $ctrls['logLevel'] = '=4=3=2=1=0=';
       <td>
         <div class="siteH1" >Configuration</div>
         <br/>
-        <div class="siteH2">This screen will help you configure Project'Or RIA at first run.</div>
+        <div class="siteH2">This screen will help you configure ProjeQtOr at first run.</div>
         <br/>
       </td>
     </tr>

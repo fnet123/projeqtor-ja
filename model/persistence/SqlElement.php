@@ -1,4 +1,31 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ * 
+ * Most of properties are extracted from Dojo Framework.
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /** ===========================================================================**********
  * Abstract class defining all methods to interact with database,
  * using Sql class.
@@ -1155,6 +1182,7 @@ abstract class SqlElement {
 						$newObj->$col_name->plannedWork=0;
 						$newObj->$col_name->leftWork=0;
 						$newObj->$col_name->realWork=0;
+						$newObj->$col_name->notPlannedWork=0;
 						$newObj->$col_name->idle=0;
 						$newObj->$col_name->done=0;
 					}
@@ -1884,7 +1912,7 @@ abstract class SqlElement {
 				}
 			}
 			return 'undefined';
-		}
+		}	
 		$fmt=$formatList[$colName];
 		$split=preg_split('/[()\s]+/',$fmt,2);
 		return $split[0];
@@ -1912,6 +1940,12 @@ abstract class SqlElement {
 			return 19;
 		} else if ($type=='double') {
 			return 2;
+		} else if ($type=='text') {
+			return 65535;
+		} else if ($type=='mediumtext') {
+				return 16777215;
+		} else if ($type=='longtext') {
+				return 4294967295;
 		} else {
 			if (count($split)>=2) {
 				return $split[1];
@@ -3127,7 +3161,7 @@ abstract class SqlElement {
 		$fieldEnd='</td>';
 		$sectionStart='<td colspan="3" style="background:#555555;color: #FFFFFF; text-align: center;font-size:10pt;font-weight:bold;">';
 		$sectionEnd='</td>';
-		$tableStart='<table style="font-size:9pt; width: 95%">';
+		$tableStart='<table style="font-size:9pt; width: 95%;font-family: Verdana, Arial, Helvetica, sans-serif;">';
 		$tableEnd='</table>';
 		$msg=$tableStart;
 		$ref=$this->getReferenceUrl();
@@ -3285,7 +3319,7 @@ abstract class SqlElement {
 		if (isset($this->_Note) and is_array($this->_Note)) {
 			$msg.=$rowStart.$sectionStart.i18n('sectionNotes').$sectionEnd.$rowEnd;
 			$note = new Note();
-			$notes=$note->getSqlElementsFromCriteria(array('refType'=>get_class($this),'refId'=>$this->id));
+			$notes=$note->getSqlElementsFromCriteria(array('refType'=>get_class($this),'refId'=>$this->id),false,null,'id desc');
 			foreach ($notes as $note) {
 				if ($note->idPrivacy==1) {
 					$userId=$note->idUser;
@@ -3352,27 +3386,44 @@ abstract class SqlElement {
 		}
 		$type=new $typeClass($this->$fldType);
 		if ( ( (property_exists($type,'lockHandled') and $type->lockHandled) or $force)
-		and property_exists($this,'handled')
-		) {
-			$this->handled=($status->setHandledStatus)?1:0;
+		and property_exists($this,'handled')) {
+			if ($status->setHandledStatus) {
+				$this->handled=1;
+				if (property_exists($this,'handledDate') and !$this->handledDate) $this->handledDate=date("Y-m-d");
+				if (property_exists($this,'handledDateTime') and !$this->handledDateTime) $this->handledDateTime=date("Y-m-d H:i:s");
+			} else {
+				$this->handled=0;
+			}
 		}
 		if ( ( (property_exists($type,'lockDone') and $type->lockDone) or $force)
 		and property_exists($this,'done') ) {
-			$this->done=($status->setDoneStatus)?1:0;
+			if ($status->setDoneStatus) {
+				$this->done=1;
+				if (property_exists($this,'doneDate') and !$this->doneDate) $this->doneDate=date("Y-m-d");
+				if (property_exists($this,'doneDateTime') and !$this->doneDateTime) $this->doneDateTime=date("Y-m-d H:i:s");
+			} else {
+				$this->done=0;
+			}
 		}
 		if ( ( (property_exists($type,'lockIdle') and $type->lockIdle) or $force)
 		and property_exists($this,'idle') ) {
 			if (! self::isSaveConfirmed()) {
-				// If save confirmed, must not override idle status that is cascaded
-			  $this->idle=($status->setIdleStatus)?1:0;
+			// If save confirmed, must not override idle status that is cascaded
+				if ($status->setIdleStatus) {
+					$this->idle=1;
+					if (property_exists($this,'idleDate') and !$this->idleDate) $this->idleDate=date("Y-m-d");
+					if (property_exists($this,'idleDateTime') and !$this->idleDateTime) $this->idleDateTime=date("Y-m-d H:i:s");
+				} else {
+					$this->idle=0;
+				}
 			}
 		}
 		if ( ( (property_exists($type,'lockCancelled') and $type->lockCancelled) or $force)
-    and property_exists($this,'cancelled') ) {
-			$this->cancelled=($status->setCancelledStatus)?1:0;
+			and property_exists($this,'cancelled') ) {
+				$this->cancelled=($status->setCancelledStatus)?1:0;
 		}
 	}
-
+	
 	public function getAlertLevel($withIndicator=false) {
 		$crit=array('refType'=>get_class($this),'refId'=>$this->id);
 		$indVal=new IndicatorValue();

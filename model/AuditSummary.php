@@ -1,4 +1,29 @@
 <?php 
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /** ============================================================================
  * Action is establised during meeting, to define an action to be followed.
  */ 
@@ -53,11 +78,11 @@ class AuditSummary extends SqlElement {
   	$totDuration=0;
   	$list=$audit->getSqlElementsFromCriteria($crit);
   	foreach($list as $audit) {
-      if (! $summary->firstConnection or $audit->connection<$summary->firstConnection) {
-  		  $summary->firstConnection=$audit->connection;
+      if (! $summary->firstConnection or $audit->connectionDateTime<$summary->firstConnection) {
+  		  $summary->firstConnection=$audit->connectionDateTime;
       }  
-      if ($audit->disconnection>$summary->lastConnection) {
-        $summary->lastConnection=$audit->disconnection;
+      if ($audit->disconnectionDateTime>$summary->lastConnection) {
+        $summary->lastConnection=$audit->disconnectionDateTime;
       }
       $summary->numberSessions++;
       if (! $summary->minDuration or $audit->duration<$summary->minDuration) {
@@ -66,7 +91,7 @@ class AuditSummary extends SqlElement {
       if ($audit->duration>$summary->maxDuration) {
         $summary->maxDuration=$audit->duration;
       }
-      $totDuration+=strtotime($audit->lastAccess)-strtotime($audit->connection);
+      $totDuration+=strtotime($audit->lastAccessDateTime)-strtotime($audit->connectionDateTime);
   	}
     if ($summary->numberSessions>0) {
   	  $meanDuration=round($totDuration/$summary->numberSessions,0);   
@@ -90,11 +115,11 @@ class AuditSummary extends SqlElement {
    	 $delay=Parameter::getGlobalParameter('alertCheckTime');
    	 if (! $delay or $delay < 30) { $delay==30 ;}
    	 foreach ($list as $audit) {
-   	 	 $duration=strtotime(date('Y-m-d'))-strtotime($audit->lastAccess);
+   	 	 $duration=strtotime(date('Y-m-d'))-strtotime($audit->lastAccessDateTime);
        if ($duration>5*$delay) { // Very old connection, idle now, must be closed
     	 	 //$audit->requestDisconnection=1;
          $audit->idle=1;
-   	 	   $audit->disconnection=$audit->lastAccess;
+   	 	   $audit->disconnectionDateTime=$audit->lastAccessDateTime;
          $res=$audit->save();
    	   } 
    	 }    	 

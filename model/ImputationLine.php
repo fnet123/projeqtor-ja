@@ -1,4 +1,29 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /** ============================================================================
  * Project is the main object of the project managmement.
  * Almost all other objects are linked to a given project.
@@ -368,7 +393,7 @@ scriptLog("      => ImputationLine->getParent()-exit");
       $canValidate=false;
     } else if ($scope->accessCode=='ALL') {
       $canValidate=true;
-    } else if ($scope->accessCode=='OWN' and $user->isResource and $resourceId==$user->id) {
+    } else if (($scope->accessCode=='OWN' or $scope->accessCode=='RES') and $user->isResource and $resourceId==$user->id) {
       $canValidate=true;
     } else if ($scope->accessCode=='PRO') {
       $crit='idProject in ' . transformListIntoInClause($user->getVisibleProjects());
@@ -650,9 +675,9 @@ scriptLog("      => ImputationLine->getParent()-exit");
 			echo '</tr></table>';
 			echo '</td>';
 			//echo '<td class="ganttDetail" align="center">' . $line->description . '</td>';
-			echo '<td class="ganttDetail" align="center" width="5%">' . htmlFormatDate($line->startDate) . '</td>';
-			echo '<td class="ganttDetail" align="center" width="5%">' . htmlFormatDate($line->endDate) . '</td>';
-			echo '<td class="ganttDetail" align="center" width="5%">';
+			echo '<td class="ganttDetail" align="center" width="'.$dateWidth.'px">' . htmlFormatDate($line->startDate) . '</td>';
+			echo '<td class="ganttDetail" align="center" width="'.$dateWidth.'px">' . htmlFormatDate($line->endDate) . '</td>';
+			echo '<td class="ganttDetail" align="center" width="'.$workWidth.'px">';
 			if ($line->imputable) {
 				if (!$print) {
 					echo '<div type="text" dojoType="dijit.form.NumberTextBox" ';
@@ -668,7 +693,7 @@ scriptLog("      => ImputationLine->getParent()-exit");
 				}
 			}
 			echo '</td>';
-			echo '<td class="ganttDetail" align="center" width="5%">';
+			echo '<td class="ganttDetail" align="center" width="'.$workWidth.'px">';
 			if ($line->imputable) {
 				if (!$print) {
 					echo '<div type="text" dojoType="dijit.form.NumberTextBox" ';
@@ -698,10 +723,10 @@ scriptLog("      => ImputationLine->getParent()-exit");
 					$idWork=$line->arrayWork[$i]->id;
 					if (! $print) {
 						echo '<div style="position: relative">';
-						if ($showPlanned) {
+						if ($showPlanned and $line->arrayPlannedWork[$i]->work) {
 							echo '<div style="display: inline;';
-							echo ' position: absolute; right: 5px; top: 0px; text-align: right;';
-							echo ' color:#8080DD; font-size:80%;">';
+							echo ' position: absolute; right: 10px; top: 0px; text-align: right;';
+							echo ' color:#8080DD; font-size:90%;">';
 							echo  Work::displayImputation($line->arrayPlannedWork[$i]->work);
 							echo '</div>';
 						}
@@ -804,7 +829,13 @@ scriptLog("      => ImputationLine->getParent()-exit");
 				echo '<div type="text" dojoType="dijit.form.NumberTextBox" ';
 				//echo ' constraints="{pattern:\'###0.0#\'}"';
 				echo ' trim="true" disabled="true" ';
-				echo ($colSum[$i]>$capacity)?' class="imputationInvalidCapacity"':' class="displayTransparent"'; 
+				if ($colSum[$i]>$capacity) {
+				  echo ' class="imputationInvalidCapacity"';
+				} else if ($colSum[$i]<$capacity) {
+					echo ' class="displayTransparent"'; 
+				} else  {
+					echo ' class="imputationValidCapacity"';
+				}
 				echo '  style="width: 45px; text-align: center; color: #000000 !important;" ';
 				echo ' id="colSumWork_' . $i . '"';
 				echo ' value="' . $colSum[$i] . '" ';

@@ -1,4 +1,29 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * Planning element is an object included in all objects that can be planned.
  */ 
@@ -42,6 +67,7 @@ class MilestonePlanningElement extends PlanningElement {
     "initialWork"=>"hidden,noImport",
     "validatedWork"=>"hidden,noImport",
     "plannedWork"=>"hidden,noImport",
+  	"notPlannedWork"=>"hidden",
     "realWork"=>"hidden,noImport",
     "plannedEndDate"=>"readonly",
     "assignedWork"=>"hidden,noImport",
@@ -123,6 +149,7 @@ class MilestonePlanningElement extends PlanningElement {
     $this->initialWork=0;
     $this->validatedWork=0;
     $this->plannedWork=0;
+    $this->notPlannedWork=0;
     $this->realWork=0;
     $this->elementary=1;
     return parent::save();

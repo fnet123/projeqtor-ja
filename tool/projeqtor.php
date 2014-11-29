@@ -1,15 +1,39 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 $projeqtor='loaded';
 spl_autoload_register('projeqtorAutoload', true);
 include_once('../model/User.php');
 session_start();
-ob_clean();
 // Setup session. Must be first command.
 // === Application data : version, dependencies, about message, ...
 $applicationName="ProjeQtOr"; // Name of the application
 $copyright=$applicationName;  // Copyright to be displayed
-$version="V4.4.2";            // Version of application : Major / Minor / Release
-$build="0106";                // Build number. To be increased on each release
+$version="V4.5.0";            // Version of application : Major / Minor / Release
+$build="0107";                // Build number. To be increased on each release
 $website="http://www.projeqtor.org"; // ProjeQtOr site url
 $aboutMessage='';             // About message to be displayed when clicking on application logo
 $aboutMessage.='<div>' . $applicationName . ' ' . $version . ' ('.($build+0).')</div><br/>';
@@ -221,8 +245,6 @@ function setupLocale () {
   $_SESSION['lang']=$currentLocale; // Must be kept for user parameter screen initialization
   if (isset($_SESSION['browserLocaleDateFormat'])) {
     $browserLocaleDateFormat=$_SESSION['browserLocaleDateFormat'];
-  } else {
-    $browserLocaleDateFormat='YYYY-MM-DD';
   }
 }
 
@@ -498,7 +520,20 @@ function array_merge_preserve_keys() {
   }  
   return $result;
 }
-
+function array_sum_preserve_keys() {
+	$params= func_get_args();
+	$result=array();
+	foreach($params as &$array) {
+		foreach ($array as $key=>&$value) {
+			if (isset($result[$key])) {
+				$result[$key]+=$value;
+			} else {
+				$result[$key]=$value;
+			}
+		}
+	}
+	return $result;
+}
 /** ===========================================================================
  * Check if menu can be displayed, depending of user profile
  * @param $menu the name of the menu to check
@@ -580,6 +615,7 @@ function getAccesResctictionClause($objectClass,$alias=null, $showIdle=false) {
     $table=$obj->getDatabaseTableName();
   }
   $accessRightRead=securityGetAccessRight($obj->getMenuClass(), 'read');
+  $accessRightUpdate=securityGetAccessRight($obj->getMenuClass(), 'update');
   $queryWhere="";
   if ($accessRightRead=='NO') {
     $queryWhere.= ($queryWhere=='')?'':' and ';
@@ -591,6 +627,18 @@ function getAccesResctictionClause($objectClass,$alias=null, $showIdle=false) {
         $queryWhere.=  "idUser = '" . Sql::fmtId($_SESSION['user']->id) . "'";   
       } else {
         $queryWhere.=  $table . ".idUser = '" . Sql::fmtId($_SESSION['user']->id) . "'";   
+      }
+    } else {
+      $queryWhere.= ($queryWhere=='')?'':' and ';
+      $queryWhere.=  "(1 = 2)";  
+    }         
+  } else if ($accessRightRead=='RES') {
+    if (property_exists($obj,"idResource")) {
+      $queryWhere.= ($queryWhere=='')?'':' and ';
+      if ($alias===false) {
+        $queryWhere.=  "idResource = '" . Sql::fmtId($_SESSION['user']->id) . "'";   
+      } else {
+        $queryWhere.=  $table . ".idResource = '" . Sql::fmtId($_SESSION['user']->id) . "'";   
       }
     } else {
       $queryWhere.= ($queryWhere=='')?'':' and ';
@@ -1294,8 +1342,8 @@ function securityGetAccessRightYesNo($menuName, $accessType, $obj=null, $user=nu
   }
   $accessRight=securityGetAccessRight($menuName, $accessType, $obj, $user);
   if ($accessType=='create') {
-    $accessRight=($accessRight=='NO' or $accessRight=='OWN')?'NO':'YES';
-  } else if ($accessType=='update' or $accessType=='delete' or $accessType='read') {
+    $accessRight=($accessRight=='NO' or $accessRight=='OWN' or $accessRight=='RES')?'NO':'YES';
+  } else if ($accessType=='update' or $accessType=='delete' or $accessType=='read') {
     if ($accessRight=='NO') {
       // will return no
     } else if ($accessRight=='ALL') {
@@ -1318,7 +1366,18 @@ function securityGetAccessRightYesNo($menuName, $accessType, $obj=null, $user=nu
       $accessRight='NO';
       if ($obj != null) {
         if (property_exists($obj, 'idUser')) {
-          if ($user->id==$obj->idUser) {
+        	$old=$obj->getOld();
+          if ($old->id and $user->id==$old->idUser) {
+            $accessRight='YES';
+          }
+        }
+      }
+    } else if ($accessRight=='RES') {
+      $accessRight='NO';
+      if ($obj != null) {
+        if (property_exists($obj, 'idResource')) {
+        	$old=$obj->getOld();
+          if ($old->id and $user->id==$old->idResource) {
             $accessRight='YES';
           }
         }
@@ -1427,6 +1486,7 @@ function workDayDiffDates($start, $end) {
  * @return int number of days
  */
 function dayDiffDates($start, $end) {
+	if (! trim($start) or ! trim($end)) return 0;
   $tStart = explode("-", $start);
   $tEnd = explode("-", $end);
   $dStart=mktime(0, 0, 0, $tStart[1], $tStart[2], $tStart[0]);
@@ -2148,13 +2208,23 @@ function projeqtor_set_memory_limit($memory) {
 }
 
 function setSessionValue($code,$value) {
-	$_SESSION[$code]=$value;
+	global $paramDbName, $paramDbPrefix;
+	$projeqtorSession='ProjeQtOr_'.$paramDbName.(($paramDbPrefix)?'_'.$paramDbPrefix:'');
+	if (! isset($_SESSION[$projeqtorSession])) {
+		$_SESSION[$projeqtorSession]=array();
+	}
+	$_SESSION[$projeqtorSession][$code]=$value;
 }
 function getSessionValue($code, $default=null) {
-	if (! isset($_SESSION[$code])) { 
+	global $paramDbName, $paramDbPrefix;
+	$projeqtorSession='ProjeQtOr_'.$paramDbName.(($paramDbPrefix)?'_'.$paramDbPrefix:'');
+	if (! isset($_SESSION[$projeqtorSession])) {
 		return $default;
 	}
-	return $_SESSION[$code];
+	if (! isset($_SESSION[$projeqtorSession][$code])) { 
+		return $default;
+	}
+	return $_SESSION[$projeqtorSession][$code];
 }
 
 function formatNumericOutput($val) {

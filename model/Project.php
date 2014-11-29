@@ -1,4 +1,29 @@
 <?php 
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /** ============================================================================
  * Project is the main object of the project managmement.
  * Almost all other objects are linked to a given project.
@@ -333,9 +358,12 @@ class Project extends SqlElement {
     return $list;
   }
 
-  
+  private static $topProjectListArray=array();
   public function getTopProjectList($includeSelf=false) {
-//scriptLog("Project($this->id)->getTopProjectList($includeSelf)");    	
+//scriptLog("Project($this->id)->getTopProjectList($includeSelf)");
+    if (isset(self::$topProjectListArray[$this->id.'#'.$includeSelf])) {
+    	return self::$topProjectListArray[$this->id.'#'.$includeSelf];	
+    }
     if ($includeSelf) {
       return array_merge(array($this->id),$this->getTopProjectList(false));
     }
@@ -345,6 +373,7 @@ class Project extends SqlElement {
       $topProj=new Project($this->idProject);
       $topList=$topProj->getTopProjectList();
       $result=array_merge(array($this->idProject),$topList);
+      self::$topProjectListArray[$this->id.'#'.$includeSelf]=$result;
       return $result;
     }
   }
@@ -488,7 +517,7 @@ scriptLog("Project($this->id)->drawSubProjects(selectField=$selectField, recursi
           } else if (! $reachLine) {
             $result .= '<td style="#AAAAAA;" NOWRAP><div class="display" style="width: 100%;">' . $prj->name . '</div>';
           } else {
-            $clickEvent=' onClick=\'setSelectedProject("' . $prj->id . '", "' . htmlEncode($prj->name) . '", "' . $selectField . '");\' ';
+            $clickEvent=' onClick=\'setSelectedProject("' . $prj->id . '", "' . htmlEncode($prj->name,'parameter') . '", "' . $selectField . '");\' ';
             $result .= '<td><div ' . $clickEvent . ' class="menuTree" style="width:100%;">';
             $result .= htmlEncode($prj->name);
             $result .= '</div>';

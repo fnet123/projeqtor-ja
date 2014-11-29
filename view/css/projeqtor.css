@@ -1,3 +1,30 @@
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ * 
+ * Most of properties are extracted from Dojo Framework.
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * Main css styles for Printing purpose of ProjeQtOr application.
  * ============================================================================
@@ -161,7 +188,7 @@ html, body {
       vertical-align: middle;
       margin: 2px 8px 2px 8px; padding: 5px;
       opacity:0.0;filter:alpha(opacity=00);
-      overflow: hidden;
+      overflow-y: auto;
     }
     #formDiv {
       overflow: auto; 
@@ -392,7 +419,8 @@ label, .label {
 .title {
     font-size: 12pt; 
     font-weight: bold;
-	white-space: nowrap;
+    display: block;
+    max-height: 2em;
 }
 
 .titleProject {
@@ -767,6 +795,15 @@ label, .label {
   cursor: pointer;
 }
 
+.iconPlanStopped {
+  background-image: url(images/planStopped.gif);
+  background-repeat: no-repeat;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  cursor: pointer;
+}
+
 .iconHelp {
   background-image: url('images/iconHelp.png');
   background-repeat: no-repeat;
@@ -834,6 +871,11 @@ label, .label {
 }
 .imputationInvalidCapacity {
 	background-color : #ff7777;
+	color : #ff0000;
+	font-weight: normal;
+}
+.imputationValidCapacity {
+	background-color : #77ff77;
 	color : #ff0000;
 	font-weight: normal;
 }
@@ -2353,6 +2395,205 @@ label, .label {
     scrollbar-track-color: #ececec;
     scrollbar-arrow-color: #545281;*/
 }
+/* =============================================================================== */
+/* Projectom THEME                                                             */
+/* =============================================================================== */
+
+
+
+
+.Projectom html, .Projectom body, .Projectom #leftDiv, .Projectom #logoDiv,
+.Projectom .dijitSplitterH, .Projectom .dijitGutterH, .Projectom .dijitSplitterV, .Projectom .dijitGutterV,
+.Projectom .loginBackground {
+  background-color: #545281; 
+  /* background-color: #d4d5da; */
+}
+
+.Projectom .dijitMenuItemHover,
+.Projectom .dijitMenuPassive .dijitMenuItemHover,
+.Projectom .dijitMenuItemSelected  {
+  background-color: #545281;  color: #EEEEEE; 
+  /* background-color: #d4d5da; color: #545281; */  
+}
+
+.Projectom #mapDiv, .Projectom #messageDiv, .Projectom #listDiv, .Projectom #detailDiv, .Projectom #formDiv, .Projectom .display, .Projectom .background,
+.Projectom #printPreview, .Projectom .dijitTitlePaneContentInner, 
+.Projectom #mainDiv,  .Projectom #contentDiv, .Projectom #centerDiv {
+  background-color: #ececec;
+}
+.Projectom #buttonDiv { /**toolbar**/
+  background-color: #d4d5da;  color: #545281;  
+}
+.Projectom #toolBarDiv, .Projectom #statusBarDiv, .Projectom .statusBar { /**toolbar**/
+  /*background-color: #545281;  color: #EEEEEE; */ 
+   background-color: #d4d5da;  color: #545281;
+}
+  
+.Projectom .dojoxGridRowSelected { /**selected lines**/
+  background-color: #545281;  color: #EEEEEE; 
+  /* background-color: #d4d5da;  color: #545281; */   
+} 
+
+.Projectom .listTitle {
+  /* background-color: #545281;  color: #EEEEEE; */  
+  background-color: #d4d5da;  color: #545281; 
+}
+
+.Projectom .tabLabel, .Projectom .label, .Projectom .dojoxGridRowOver .dojoxGridCell {
+  background-color: #ececec; color: #545281;
+}
+  
+.Projectom .dijitTitlePane .dijitTitlePaneTitle {
+  background-color: #d4d5da;  color: #545281;
+  border-top: 1px solid #A0A0A0;
+  border-left: 1px solid #A0A0A0;
+  border-bottom: 1px solid #FFFFFF; 
+  border-right: 1px solid #FFFFFF;
+  -moz-border-radius: 7px;
+  border-radius: 7px;
+}
+.Projectom .section {
+  background-color: #d4d5da;  color: #545281;
+  border-top: 1px solid #A0A0A0;
+  border-left: 1px solid #A0A0A0;
+  border-bottom: 1px solid #A0A0A0; 
+  border-right: 1px solid #A0A0A0;
+}
+
+.Projectom .display, .Projectom #printPreview {
+  border: 1px solid #ececec;
+}
+
+.Projectom .titleProject {
+ color: #545281;  
+}
+
+
+
+
+
+.Projectom html, .Projectom body, .Projectom #leftDiv, .Projectom #logoDiv, .Projectom .dijitGutterH, .Projectom .dijitGutterV, .Projectom .loginBackground {
+    background-color: #545254;
+    background: -moz-linear-gradient(center top , #666 0%, #999 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#666), color-stop(100%,#999)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #666 0%,#999 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #666 0%,#999 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #666 0%,#999 100%); /* IE10+ */
+    background: linear-gradient(to bottom, #666 0%,#999 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#666', endColorstr='#999',GradientType=0 ); /* IE6-9 */
+}
+.Projectom #toolBarDiv, .Projectom #statusBarDiv, .Projectom .statusBar {
+    background-color: #eee;
+}
+.Projectom #toolBarDiv, .Projectom #statusBarDiv, .Projectom .statusBar {
+    color: #545254;
+}
+
+.Projectom #toolBarDiv, .Projectom #statusBarDiv, .Projectom .statusBar {
+    background-color: #e1e1e1;
+    color: #545254;
+}
+
+.Projectom .menuBarItem {
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0);
+    border-color: #c0c0c0 #c0c0c0 #9b9b9b;
+    border-image: none;
+    border-style: solid;
+    border-width: 0;
+    margin: 0;
+    padding: 2px;
+    vertical-align: middle;
+}
+
+.Projectom .menuBarSeparator {
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0);
+    margin: 0;
+    padding: 2px;
+    text-align: center;
+}
+.Projectom .titleProject {
+    color: #545254;
+}
+
+.Projectom .dojoxGridRowSelected {
+    background-color: #ad6;
+    color: #000;
+}
+
+
+.Projectom .dijitTitlePane .dijitTitlePaneTitle {
+    color: #545254;
+}
+
+.Projectom .listTitle {
+    background-color: #e9e9e9;
+    color: #545254;
+}
+
+
+.Projectom #messageDiv {
+    background: none repeat scroll 0 0 #ffddbb;
+}
+
+.Projectom #menuTree {
+    background: none repeat scroll 0 0 #ecffc8;
+}
+
+.Projectom .dijitTitlePane .dijitTitlePaneTitle {
+    background: -moz-linear-gradient(center top , #ddd 0%, #bbb 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ddd), color-stop(100%,#bbb)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top, #ddd 0%,#bbb 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top, #ddd 0%,#bbb 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top, #ddd 0%,#bbb 100%); /* IE10+ */
+background: linear-gradient(to bottom, #ddd 0%,#bbb 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ddd', endColorstr='#bbb',GradientType=0 ); /* IE6-9 */
+color : #333;
+}
+
+.Projectom #buttonDiv {
+background: -moz-linear-gradient(center top , #dfdfdf 30%, #d0d0cf 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+background: -webkit-gradient(linear, left top, left bottom, color-stop(30%,#dfdfdf), color-stop(100%,#d0d0cf)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top, #dfdfdf 30%,#d0d0cf 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top, #dfdfdf 30%,#d0d0cf 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top, #dfdfdf 30%,#d0d0cf 100%); /* IE10+ */
+background: linear-gradient(to bottom, #dfdfdf 30%,#d0d0cf 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dfdfdf', endColorstr='#d0d0cf',GradientType=0 ); /* IE6-9 */
+color : #333;
+
+}
+
+.Projectom .listTitle {
+background: -moz-linear-gradient(center top , #dfdfdf 30%, #d0d0cf 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+background: -webkit-gradient(linear, left top, left bottom, color-stop(30%,#dfdfdf), color-stop(100%,#d0d0cf)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top, #dfdfdf 30%,#d0d0cf 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top, #dfdfdf 30%,#d0d0cf 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top, #dfdfdf 30%,#d0d0cf 100%); /* IE10+ */
+background: linear-gradient(to bottom, #dfdfdf 30%,#d0d0cf 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dfdfdf', endColorstr='#d0d0cf',GradientType=0 ); /* IE6-9 */
+    color: #333;
+}
+.Projectom #toolBarDiv {
+    border-bottom: none;
+}
+.Projectom #globalContainer {
+    background: none repeat scroll 0 0 #dfdfdf;
+}
+
+.Projectom #logoDiv {
+    background-color: #545254;
+    background: -moz-linear-gradient(center top , #666 0%, #999 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#666), color-stop(100%,#999)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #666 0%,#999 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #666 0%,#999 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #666 0%,#999 100%); /* IE10+ */
+    background: linear-gradient(to bottom, #666 0%,#999 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#666', endColorstr='#999',GradientType=0 ); /* IE6-9 */
+
+}
+
+/* =============================================================================== */
+/* Projectom THEME END                                                             */
+/* =============================================================================== */
 
 /* =============================================================================== */
 /* COMMON                                                                          */

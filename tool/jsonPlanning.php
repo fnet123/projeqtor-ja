@@ -1,4 +1,29 @@
 <?PHP
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /** ===========================================================================
  * Get the list of objects, in Json format, to display the grid list
  */
@@ -93,7 +118,8 @@
   }
   $queryWhere.= ($queryWhere=='')?'':' and ';
   if ($portfolio) {
-  	$queryWhere.=getAccesResctictionClause('Project',$table);
+  	//$queryWhere.=getAccesResctictionClause('Project',$table);
+  	$queryWhere.='('.getAccesResctictionClause('Project',$table).' OR '.getAccesResctictionClause('Milestone',$table).')';
   } else {
     $queryWhere.=getAccesResctictionClause('Activity',$table);
   }
@@ -580,7 +606,10 @@
           //$pBackground='background:#505050 url(../view/img/grey.png) repeat-x;';
           $pBackground='background-color:#505050;';
         } else {
-          if (trim($line['validatedenddate'])!="" && $line['validatedenddate'] < $pEnd) {
+        	if ($line['notplannedwork']>0) {        		
+        		$pColor='#B45F04';
+        		$pBackground='background-color:#B45F04;';
+        	} else if (trim($line['validatedenddate'])!="" && $line['validatedenddate'] < $pEnd) {
             $pColor='#BB5050';
             //$pBackground='background:#BB5050 url(../view/img/red.png) repeat-x;';
             $pBackground='background-color:#BB5050;';

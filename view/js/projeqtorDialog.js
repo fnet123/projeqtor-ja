@@ -1,3 +1,28 @@
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 // ============================================================================
 // All specific ProjeQtOr functions and variables for Dialog Purpose
 // This file is included in the main.php page, to be reachable in every context
@@ -2370,6 +2395,10 @@ function showPlanParam (selectedProject) {
  * 
  */
 function plan() {
+  var bt=dijit.byId('planButton');
+  if (bt) {
+	  bt.set('iconClass',"iconPlan");
+  }
   if (!dijit.byId('idProjectPlan').get('value')) {
     dijit.byId('idProjectPlan').set('value',' ');
   }
@@ -3139,6 +3168,8 @@ function addAffectation(objectClass, type, idResource, idProject) {
 	dijit.byId("affectationResource").set('required',true);
 	dijit.byId("affectationRate").set('value','100');
 	dijit.byId("affectationIdle").reset();
+	dijit.byId("affectationStartDate").reset();
+	dijit.byId("affectationEndDate").reset();
 	dijit.byId("dialogAffectation").show();
 }
 
@@ -3155,7 +3186,7 @@ function removeAffectation(id) {
 } 
 
 affectationLoad=false;
-function editAffectation(id, objectClass, type, idResource, idProject, rate,idle) {
+function editAffectation(id, objectClass, type, idResource, idProject, rate,idle, startDate, endDate) {
 	if (checkFormChangeInProgress()) {
 		showAlert(i18n('alertOngoingChange'));
 		return;
@@ -3185,6 +3216,16 @@ function editAffectation(id, objectClass, type, idResource, idProject, rate,idle
 	} else {
       dijit.byId("affectationRate").reset();
 	}
+	if (startDate) {
+		dijit.byId("affectationStartDate").set('value',startDate);
+	} else {
+		dijit.byId("affectationStartDate").reset();
+	}
+	if (endDate) {
+		dijit.byId("affectationEndDate").set('value',endDate);
+	} else {
+		dijit.byId("affectationEndDate").reset();
+	}
 	if (idle==1) {
 		dijit.byId("affectationIdle").set('value',idle);
 	} else {
@@ -3195,6 +3236,14 @@ function editAffectation(id, objectClass, type, idResource, idProject, rate,idle
 
 function saveAffectation() {
 	var formVar = dijit.byId('affectationForm');
+	if (dijit.byId('affectationStartDate') && dijit.byId('affectationEndDate') ) {
+	   start=trim(dijit.byId('affectationStartDate').get("value"));
+	   end=trim(dijit.byId('affectationEndDate').get("value"));
+	   if (start!="" && end!="" && end<start) {
+		   showAlert(i18n("errorStartEndDates",new Array(i18n("colStartDate"),i18n("colEndDate"))));
+		   return;
+	   }
+	}
 	if(formVar.validate()){		
 		loadContent("../tool/saveAffectation.php", "resultDiv", "affectationForm", true,'affectation');
 		dijit.byId('dialogAffectation').hide();
@@ -3294,7 +3343,7 @@ function setProductValueFromVersion(field,versionId) {
   dojo.xhrGet({
 		url: "../tool/getProductValueFromVersion.php?idVersion="+versionId,
 		handleAs: "text",
-		load: function(data,args) { 
+		load: function(data,args) {
 			prd=dijit.byId(field);
 			if (prd) {			
 			   prd.set("value",trim(data));	
@@ -4178,6 +4227,8 @@ function showMailOptions() {
 		dijit.byId("dialogMail").show();
 	}
 	if (dijit.byId("dialogMail") && dojo.byId('dialogMailObjectClass') && dojo.byId('dialogMailObjectClass').value==dojo.byId("objectClass").value) {
+		dojo.byId('mailRefType').value=dojo.byId('objectClass').value;
+		dojo.byId('mailRefId').value=dojo.byId('objectId').value;
 		dijit.byId("dialogMail").show();	
 	} else  {
 		var param="&objectClass="+dojo.byId("objectClass").value;
@@ -4596,7 +4647,7 @@ function checkExportColumns(scope) {
 // ==================================================================
 function changeProjectSelectorType(displayMode) {
   dojo.xhrPost({
-    url: "../tool/saveDataToSession.php?id=projectSelectorDisplayMode&value="+displayMode,
+    url: "../tool/saveDataToSession.php?saveUserParam=true&id=projectSelectorDisplayMode&value="+displayMode,
     load: function() {loadContent("../view/menuProjectSelector.php", 'projectSelectorDiv');}
   });
   if (dijit.byId('dialogProjectSelectorParameters')) {

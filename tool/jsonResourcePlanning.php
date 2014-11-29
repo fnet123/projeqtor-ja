@@ -1,4 +1,29 @@
 <?PHP
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /** ===========================================================================
  * Get the list of objects, in Json format, to display the grid list
  */
@@ -106,7 +131,7 @@ $queryWhere.= ($queryWhere=='')?'':' and ';
 $queryWhere.=  $table . ".idProject not in " . Project::getAdminitrativeProjectList() ;
 $ass=new Assignment();
 $res=new Resource();
-$querySelect .= "pe.id idPe, pe.wbs wbs, pe.wbsSortable wbsSortable, pe.priority priority, pe.idplanningmode idplanningmode, ass.* , usr.fullName as name, pe.refName refName";
+$querySelect .= "pe.idProject as idProj, pe.id idPe, pe.wbs wbs, pe.wbsSortable wbsSortable, pe.priority priority, pe.idplanningmode idplanningmode, ass.* , usr.fullName as name, pe.refName refName";
 $queryFrom .= $table . ' pe, ' . $ass->getDatabaseTableName() . ' ass, ' . $res->getDatabaseTableName() . ' usr';
 $queryWhere= ' pe.refType=ass.refType and pe.RefId=ass.refId and usr.id=ass.idResource and ' . str_replace($table, 'pe', $queryWhere);
 $queryOrderBy .= ' name, pe.wbsSortable ';
@@ -179,8 +204,8 @@ if (Sql::$lastQueryNbRows == 0) {
 		  $sumPlanned=0;
 		  $idProject="";
 		}
-	  if ($showProject and $line['idproject']!=$idProject) {
-      $idProject=$line['idproject'];
+	  if ($showProject and $line['idproj']!=$idProject) {
+      $idProject=$line['idproj'];
       if (array_key_exists($idProject, $arrayProject)) {
       	$prj=$arrayProject[$idProject];
       } else {

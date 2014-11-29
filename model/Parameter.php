@@ -55,6 +55,10 @@ class Parameter extends SqlElement {
       $colScript .= '<script type="dojo/connect" event="onChange" >';
       $colScript .= '  changeLocale(this.value);';
       $colScript .= '</script>';
+    } else if ($colName=="browserLocaleDateFormat") {
+      $colScript .= '<script type="dojo/connect" event="onChange" >';
+      $colScript .= '  changeBrowserLocaleForDates(this.value);';
+      $colScript .= '</script>';
     } else if ($colName=="paramConfirmQuit") {
       $colScript .= '<script type="dojo/connect" event="onChange" >';
       $colScript .= '  paramConfirmQuit=this.value;';
@@ -131,7 +135,7 @@ class Parameter extends SqlElement {
       $colScript .= '  newValue=this.value;';
       $colScript .= '  dojo.xhrPost({url: "../tool/saveDataToSession.php?id=' . $colName . '&value=" + newValue});';
       $colScript .= '</script>';
-    } 
+    }
     return $colScript;
   }
   
@@ -157,6 +161,7 @@ class Parameter extends SqlElement {
                     'ProjeQtOrWine'=>i18n('themeProjeQtOrWine'),
                     'ProjeQtOrDark'=>i18n('themeProjeQtOrDark'),
                     'ProjeQtOrLight'=>i18n('themeProjeQtOrLight'),
+                    'Projectom'=>i18n('themeProjectom'),
                     'blueLight'=>i18n('themeBlueLight'), 
                     'blue'=>i18n('themeBlue'), 
                     'blueContrast'=>i18n('themeBlueContrast'),
@@ -189,9 +194,15 @@ class Parameter extends SqlElement {
                     'zh'=>i18n('langZh'),
                     'nl'=>i18n('langNl'),
                     'fa'=>i18n('langFa'),
-                    'ja'=>i18n('langJa'));
+                    'ja'=>i18n('langJa'),
+                    'el'=>i18n('langEl'));
         //sort($list);  // not a good idea : would push brazialian as defaut (first) language...   
         break;
+      case 'browserLocaleDateFormat':
+      	$list=array('DD/MM/YYYY'=>'DD/MM/YYYY',
+      			'MM/DD/YYYY'=>'MM/DD/YYYY',
+      			'YYYY-MM-DD'=>'YYYY-MM-DD');
+      	break;
       case 'defaultProject':
         if (array_key_exists('user',$_SESSION)) {
           $user=$_SESSION['user'];
@@ -352,6 +363,7 @@ class Parameter extends SqlElement {
                          'sectionDisplayParameter'=>"section",
                            "theme"=>"list", 
                            "lang"=>"list",
+                           "browserLocaleDateFormat"=>"list",
                            'paramIconSize'=>'list',
                            'paramTopIconSize'=>'list',
                            //'sectionObjectDetail'=>'section', 

@@ -1,4 +1,29 @@
 <?php 
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /** ============================================================================
  * Action is establised during meeting, to define an action to be followed.
  */  
@@ -220,12 +245,14 @@ class ActivityMain extends SqlElement {
     $oldIdle=null;
     $oldIdProject=null;
     $oldIdActivity=null;
+    $oldTargetVersion=null;
     if ($this->id) {
       $old=$this->getOld();
       $oldResource=$old->idResource;
       $oldIdle=$old->idle;
       $oldIdProject=$old->idProject;
       $oldIdActivity=$old->idActivity;
+      $oldTargetVersion=$old->idTargetVersion;
     }
     // #305 : need to recalculate before dispatching to PE
     $this->recalculateCheckboxes();
@@ -267,6 +294,7 @@ class ActivityMain extends SqlElement {
 	      $ass->realWork=0;
 	      $ass->leftWork=0;
 	      $ass->plannedWork=0;
+	      $ass->notPlannedWork=0;
 	      $ass->rate='100';
 	      $ass->save();
       }   
@@ -314,6 +342,17 @@ class ActivityMain extends SqlElement {
     			$objBis->idProject=$this->idProject;
     			$tmpRes=$objBis->save();
     		}
+    	}
+    }
+    if ($oldTargetVersion!=$this->idTargetVersion) {
+    	$vers=new Version($this->idTargetVersion);
+    	$idProduct=($vers->idProduct)?$vers->idProduct:null;
+    	$ticket=new Ticket();
+    	$ticketList=$ticket->getSqlElementsFromCriteria(array('idActivity'=>$this->id));
+    	foreach ($ticketList as $ticket) {
+    		$ticket->idTargetVersion=$this->idTargetVersion;
+    		if ($idProduct) {$ticket->idProduct=$idProduct;}
+    		$ticket->save();
     	}
     }
     return $result;

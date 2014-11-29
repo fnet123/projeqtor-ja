@@ -1,4 +1,29 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * Main page of application.
  * This page includes Frame definitions and framework requirements.
@@ -7,6 +32,7 @@
  *  Remarks for deployment :
  *    - set isDebug:false in djConfig
  */
+$mobile=false;
 require_once "../tool/projeqtor.php";
 header ('Content-Type: text/html; charset=UTF-8');
 scriptLog('   ->/view/main.php');
@@ -46,10 +72,14 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
   <script type="text/javascript" src="js/projeqtorWork.js?version=<?php echo $version.'.'.$build;?>" ></script>
   <script type="text/javascript" src="js/projeqtorDialog.js?version=<?php echo $version.'.'.$build;?>" ></script>
   <script type="text/javascript" src="js/projeqtorFormatter.js?version=<?php echo $version.'.'.$build;?>" ></script>
-  <script type="text/javascript" src="../external/dojo/dojo.js?version=<?php echo $version.'.'.$build;?>"
-    djConfig='modulePaths: {"i18n":"../../tool/i18n"},
-              parseOnLoad: true, 
-              isDebug: <?php echo getBooleanValueAsString(Parameter::getGlobalParameter('paramDebugMode'));?>'></script>
+  <script type="text/javascript">
+        var dojoConfig = {
+            modulePaths: {"i18n":"../../tool/i18n"},
+            parseOnLoad: true,
+            isDebug: <?php echo getBooleanValueAsString(Parameter::getGlobalParameter('paramDebugMode'));?>
+        };
+    </script>
+  <script type="text/javascript" src="../external/dojo/dojo.js?version=<?php echo $version.'.'.$build;?>"></script>
   <script type="text/javascript" src="../external/dojo/projeqtorDojo.js?version=<?php echo $version;?>"></script>
   <script type="text/javascript"> 
     dojo.require("dojo.store.DataStore");
@@ -137,6 +167,8 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
     var paramHoursPerDay='<?php echo Parameter::getGlobalParameter('dayTime');?>';
     if (! paramHoursPerDay) paramHoursPerDay=8;
     var paramConfirmQuit="<?php echo Parameter::getUserParameter("paramConfirmQuit")?>";
+    var browserLocaleDateFormat="<?php echo Parameter::getUserParameter('browserLocaleDateFormat');?>";
+    var browserLocaleDateFormatJs=browserLocaleDateFormat.replace(/D/g,'d').replace(/Y/g,'y');
     dojo.addOnLoad(function(){
       currentLocale="<?php echo $currentLocale;?>";
       <?php 
@@ -161,7 +193,7 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
       // Relaunch Cron (if stopped, any connexion will restart it)
       adminCronRelaunch();
       var onKeyPressFunc = function(event) {
-        if(event.ctrlKey && event.keyChar == 's'){
+        if(event.ctrlKey && ! event.altKey && event.keyChar == 's'){
           event.preventDefault();
         	globalSave();
         } else if (event.keyCode==dojo.keys.F1 && ! event.keyChar) {
@@ -876,6 +908,7 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
              <td>
                <div id="billLineStartDate" name="billLineStartDate"
                 dojoType="dijit.form.DateTextBox" required="true" hasDownArrow="false"   
+                constraints="{datePattern:browserLocaleDateFormatJs}"
                 type="text" maxlength="10"  style="width:100px; text-align: center;" class="input"
                 missingMessage="<?php echo i18n('messageMandatory',array('colDate'));?>" 
                 invalidMessage="<?php echo i18n('messageMandatory',array('colDate'));?>" >
@@ -889,6 +922,7 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
              <td>
                <div id="billLineEndDate" name="billLineEndDate"
                 dojoType="dijit.form.DateTextBox" required="true" hasDownArrow="false"   
+                constraints="{datePattern:browserLocaleDateFormatJs}"
                 type="text" maxlength="10"  style="width:100px; text-align: center;" class="input"
                 missingMessage="<?php echo i18n('messageMandatory',array('colDate'));?>" 
                 invalidMessage="<?php echo i18n('messageMandatory',array('colDate'));?>" >
@@ -1277,9 +1311,15 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
 	               <div id="copyWithStructure" name="copyWithStructure" dojoType="dijit.form.CheckBox" type="checkbox" 
 	                checked >
 	               </div>
-               </div>
+	               <br />
+                 <label for="copyWithAssignments" style="width:90%;text-align: right;"><?php echo i18n("copyAssignments") ?>&nbsp;:&nbsp;</label>
+                 <div id="copyWithAssignments" name="copyWithAssignments" dojoType="dijit.form.CheckBox" type="checkbox" 
+                   >
+                 </div>
+              </div>
              </td>
            </tr>
+           
            <tr>
              <td class="dialogLabel" colspan="2" style="width:100%; text-align: left;">
                <label for="copyToOrigin" style="width:90%;text-align: right;"><?php echo i18n("copyToOrigin") ?>&nbsp;:&nbsp;</label>
@@ -1622,6 +1662,7 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
              <td>
                <div id="expenseDetailDate" name="expenseDetailDate"
                  dojoType="dijit.form.DateTextBox" 
+                 constraints="{datePattern:browserLocaleDateFormatJs}"
                  invalidMessage="<?php echo i18n('messageInvalidDate');?> " 
                  type="text" maxlength="10" 
                  style="width:100px; text-align: center;" class="input"
@@ -1721,6 +1762,7 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
              <td>
                <div dojoType="dijit.form.DateTextBox" 
                  id="startDatePlan" name="startDatePlan" 
+                 constraints="{datePattern:browserLocaleDateFormatJs}"
                  invalidMessage="<?php echo i18n('messageInvalidDate')?>" 
                  type="text" maxlength="10"
                  style="width:100px; text-align: center;" class="input"
@@ -1904,6 +1946,7 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
              <td>
                <div id="resourceCostStartDate" name="resourceCostStartDate" value="" 
                  dojoType="dijit.form.DateTextBox" 
+                 constraints="{datePattern:browserLocaleDateFormatJs}"
                  style="width:100px" class="input"
                  hasDownArrow="true"
                >
@@ -1969,6 +2012,7 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
              <td>
                <div id="versionProjectStartDate" name="versionProjectStartDate" value="" 
                  dojoType="dijit.form.DateTextBox" 
+                 constraints="{datePattern:browserLocaleDateFormatJs}"
                  style="width:100px" class="input"
                  hasDownArrow="true"
                >
@@ -1982,6 +2026,7 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
              <td>
                <div id="versionProjectEndDate" name="versionProjectEndDate" value="" 
                  dojoType="dijit.form.DateTextBox" 
+                 constraints="{datePattern:browserLocaleDateFormatJs}"
                  style="width:100px" class="input"
                  hasDownArrow="true"
                >
@@ -2198,6 +2243,32 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
              </td>    
            </tr>
            <tr>
+             <td colspan="2">
+               <table>
+                 <tr>
+                   <td class="dialogLabel" >
+                     <label for="affectationStartDate" ><?php echo i18n("colStartDate");?>&nbsp;:&nbsp;</label>
+                   </td>
+                   <td>
+                     <input id="affectationStartDate" name="affectationStartDate" value=""  
+			                 dojoType="dijit.form.DateTextBox" 
+			                 constraints="{datePattern:browserLocaleDateFormatJs}"
+			                 style="width:100px" />
+                   </td>
+                   <td class="dialogLabel" >
+                     <label for="affectationEndDate" ><?php echo i18n("colEndDate");?>&nbsp;:&nbsp;</label>
+                   </td>
+                   <td>
+                   <input id="affectationEndDate" name="affectationEndDate" value=""  
+		                 dojoType="dijit.form.DateTextBox" 
+		                 constraints="{datePattern:browserLocaleDateFormatJs}"
+		                 style="width:100px" />
+                   </td>
+                 </tr>
+               </table>
+             </td>
+           </tr>
+           <tr>
              <td class="dialogLabel" >
                <label for="affectationIdle" ><?php echo i18n("colIdle");?>&nbsp;:&nbsp;</label>
              </td>
@@ -2291,7 +2362,8 @@ SqlElement::$_cachedQuery['PlanningElement']=array();
                  /> 
                 <input id="filterValueDate" name="filterValueDate" value=""  
                  dojoType="dijit.form.DateTextBox" 
-                 style="width:400px" />
+                 constraints="{datePattern:browserLocaleDateFormatJs}"
+                 style="width:100px" />
                  <select id="filterSortValueList" name="filterSortValueList" value="asc"  
                  dojoType="dijit.form.FilteringSelect"
                  missingMessage="<?php echo i18n('valueNotSelected');?>" 

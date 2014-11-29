@@ -15,7 +15,17 @@ See the GNU General Public License for more details.
 You will find below a copy of the GNU General Public License .
 You can also see http://www.gnu.org/licenses/.
 
+Limits.
 
+In any case, if you re-distribute this product you must :
+ - distribute it under GLP V3 license (or above) and so have to include 
+   source code 
+ - reference original product (ProjeQtOr)
+ - not let any ambiguity about origin of product, which could lead to think 
+   that you are the author of the product 
+Distribution also includes delivery, even to one only customer. 
+
+===============================================================================
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 

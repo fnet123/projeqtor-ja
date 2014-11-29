@@ -1,4 +1,29 @@
 <?php 
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * Presents an object. 
  */
@@ -121,7 +146,7 @@ function drawDay($date,$ress,$inScopeDay,$period,$calendar=1) {
 		if ($item['work'] and ! $item['real']) { $hintHtml.=i18n('colPlannedWork').": <i>".Work::displayWorkWithUnit($item['work'])."</i>"; }
 		echo '<tr>';
 		echo '<td style="padding: 3px 3px 0px 3px; width:100%">';
-		echo '<div id="item_'.$cpt.'" title="'.$hint.'" style="border:1px solid: #EEEEEE; box-shadow: 2px 2px 4px #AAAAAA; width: 100%;background-color:'.$item['color'].'">';
+		echo '<div id="item_'.$cpt.'" style="border:1px solid: #EEEEEE; box-shadow: 2px 2px 4px #AAAAAA; width: 100%;background-color:'.$item['color'].'">';
 		echo '<table><tr><td>';
 		$attr=((! $item['real'])?'':' style="opacity:0.5;filter:alpha(opacity=50);"');
 		echo '<img src="../view/css/images/icon'.$item['type'].'16.png"'.$attr.'/></td><td style="width:1px">';
@@ -176,8 +201,12 @@ function getAllActivities($startDate, $endDate, $ress) {
 		   ." or ( actualDueDateTime is null and (initialDueDateTime>='$startDate 00:00:00' and initialDueDateTime<='$endDate 23:59:59') )"
 	     ." )";
 		} else if (property_exists($obj, 'validatedEndDate') ) {
-			$critWhere=" refType='MileStone' and validatedEndDate>='$startDate' and validatedEndDate<='$endDate'";
-			$critWhere.=" and idProject in ".transformListIntoInClause($_SESSION['user']->getVisibleProjects(true));
+			if ($ress==$_SESSION['user']->id) {
+				$critWhere=" refType='MileStone' and validatedEndDate>='$startDate' and validatedEndDate<='$endDate' ";
+				$critWhere.=" and idProject in ".transformListIntoInClause($_SESSION['user']->getVisibleProjects(true));
+			} else {
+				$critWhere="1=0";
+			}
 	  } else {
 	  	$critWhere.=" and 1=0";
 	  }

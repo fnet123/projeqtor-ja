@@ -1,9 +1,37 @@
 <?php 
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+* Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+* Contributors : 
+*   => mamath : fix #1510
+*
+* Most of properties are extracted from Dojo Framework.
+*
+* This file is part of ProjeQtOr.
+*
+* ProjeQtOr is free software: you can redistribute it and/or modify it under
+* the terms of the GNU General Public License as published by the Free
+* Software Foundation, either version 3 of the License, or (at your option)
+* any later version.
+*
+* ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+* FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along with
+* ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+*
+* You can get complete code of ProjeQtOr, other resource, help and information
+* about contributors at http://www.projeqtor.org
+*
+*** DO NOT REMOVE THIS NOTICE ************************************************/
 $querySyntax='Possible values are :  
 GET    ../api/{objectClass}/{objectId}
-		   ../api/{objectClass}/all
-		   ../api/{objectClass}/filter/{filterId}
-		   ../api/{objectClass}/updated/{YYYYMMDDHHMNSS}/{YYYYMMDDHHMNSS}
+       ../api/{objectClass}/all
+       ../api/{objectClass}/filter/{filterId}
+       ../api/{objectClass}/search/criteria1/criteria2/... (criteria as sql where clause)
+       ../api/{objectClass}/updated/{YYYYMMDDHHMNSS}/{YYYYMMDDHHMNSS}
 PUT    ../api/{objectClass} with data containing json description of items
 POST   ../api/{objectClass} with data containing json description of items
 DELETE ../api/{objectClass} with data containing json id of items';
@@ -133,6 +161,14 @@ IF ($_SERVER['REQUEST_METHOD']=='GET') {
 			        }
 			      }
 			    }
+        } else if (count($split)>=2 and $split[1]=='search') { // =============== uri = {OblectClass}/search
+        	$cpt=2;
+        	$where="";
+        	while (isset($split[$cpt])) {
+        		$where.=($where)?" and ":'';
+        		$where.=urldecode($split[$cpt]);
+        		$cpt++;
+        	}
         } else {
         	returnError($invalidQuery, $querySyntax);
         }
@@ -245,7 +281,7 @@ function jsonDumpObj($obj, $included=false) {
 		  $res.='"' . htmlEncode($fld) . '":"' . htmlEncodeJson($val) . '"';
 		  if (substr($fld,0,2)=='id' and strlen($fld)>2) {
 		  	$idclass=substr($fld,2);
-		  	if (strtoupper(substr($idclass,0,1))==substr($idclass,0,1)) {
+		  	if (strtoupper(substr($idclass,0,1))==substr($idclass,0,1) and property_exists($idclass, 'name')) {
 		  		$res.=", ";
 		  		$res.='"name' . $idclass . '":"' . htmlEncodeJson(SqlList::getNameFromId($idclass, $val)) . '"';
 		  	}

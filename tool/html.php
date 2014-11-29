@@ -1,4 +1,29 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /** ===========================================================================
  * Html specific functions
  */
@@ -75,7 +100,7 @@ function htmlDrawOptionForReference($col, $selection, $obj=null, $required=false
 	      traceLog('error in htmlDrawOptionForReference : no control rights for ' . $class);
         return;		
 	    }
-      $controlRights=$controlRightsTable[$menuClass];
+      $controlRights=$controlRightsTable[$menuClass]; 
       if ($obj->id==null) {
         // creation mode
         if ($controlRights["create"]=="PRO") {
@@ -85,7 +110,7 @@ function htmlDrawOptionForReference($col, $selection, $obj=null, $required=false
         // read or update mode
         if (securityGetAccessRightYesNo($menuClass, 'update', $obj)=="YES") {
           // update
-          if ($controlRights["update"]=="PRO") {
+          if ($controlRights["update"]=="PRO" or $controlRights["update"]=="OWN" or $controlRights["update"]=="RES") {
             $restrictArray=$user->getVisibleProjects();
           }            
         }
@@ -431,16 +456,10 @@ function htmlFormatDate($val,$trunc=false) {
   $year=substr($val,0,4);
   $month=substr($val,5,2);
   $day=substr($val,8,2);
-  /*if ($browserLocaleDateFormat=='MMDDYYYY') {
-    return substr($val,5,2) . "/" . substr($val,8,2)  . "/" . substr($val,0,4);
-  } else if ($browserLocaleDateFormat=='DDMMYYYY') {
-    return substr($val,8,2) . "/" . substr($val,5,2)  . "/" . substr($val,0,4);
-  } else {
-  	return $val;
-  }*/
   $result=str_replace('YYYY', $year, $browserLocaleDateFormat);
   $result=str_replace('MM', $month, $result);
   $result=str_replace('DD', $day, $result);
+  $result=str_replace('YY', substr($year,2,2), $result);
   return $result;
 }
 
@@ -501,6 +520,9 @@ function htmlEncode($val,$context="default") {
   } else if ($context=='xml') {
   	$str=$val;
   	$str=str_replace("	"," ",$val);
+  	return htmlspecialchars($str,ENT_QUOTES,'UTF-8');
+  } else if ($context="parameter") {
+  	$str=str_replace('"',"''",$val);
   	return htmlspecialchars($str,ENT_QUOTES,'UTF-8');
   }
   return htmlspecialchars($val,ENT_QUOTES,'UTF-8');

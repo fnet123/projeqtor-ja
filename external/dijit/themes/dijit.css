@@ -311,7 +311,6 @@ div.dijitArrowButton {
 	top: 0;
 	left: 0;
 	#filter: ""; 
-	white-space: nowrap;
 }
 .dijitTimeTextBox {
 	width: 8em;
@@ -558,7 +557,7 @@ div.dijitArrowButton {
 }
 .dijitCheckBoxInput {
 	
-	opacity: 0;
+	opacity: 0.01;
 }
 .dj_ie .dijitCheckBoxInput {
 	filter: alpha(opacity=0);
@@ -690,12 +689,13 @@ div.dijitArrowButton {
 	overflow: hidden;
 }
 body .dijitAlignClient { position: absolute; }
-.dijitBorderContainer {
+.dijitBorderContainer, .dijitBorderContainerNoGutter {
 	position:relative;
 	overflow: hidden;
     z-index: 0; 
 }
-.dijitBorderContainerPane {
+.dijitBorderContainerPane,
+.dijitBorderContainerNoGutterPane {
 	position: absolute !important;	
 	z-index: 2;		
 }
@@ -827,14 +827,18 @@ body .dijitAlignClient { position: absolute; }
 .dijitFieldset {
 	border: 1px solid gray;
 }
-.dijitTitlePaneTitle, .dijitFieldsetTitle {
+.dijitTitlePaneTitle, .dijitFieldset legend {
 	cursor: pointer;
 	-webkit-tap-highlight-color: transparent;
 }
-.dijitTitlePaneTitleFixedOpen, .dijitTitlePaneTitleFixedClosed,
-.dijitFieldsetTitleFixedOpen, .dijitFieldsetTitleFixedClosed {
+.dijitFixedOpen, .dijitFixedClosed {
 	
 	cursor: default;
+}
+.dijitFixedOpen .dijitArrowNode, .dijitFixedOpen .dijitArrowNodeInner,
+.dijitFixedClosed .dijitArrowNode, .dijitFixedClosed .dijitArrowNodeInner{
+	
+	display: none;
 }
 .dijitTitlePaneTitle * {
 	vertical-align: middle;
@@ -845,19 +849,12 @@ body .dijitAlignClient { position: absolute; }
 }
 .dj_a11y .dijitTitlePane .dijitArrowNodeInner, .dj_a11y .dijitFieldset .dijitArrowNodeInner {
 	
-	display: inline;
+	display:inline !important;
 	font-family: monospace;		
 }
 .dj_a11y .dijitTitlePane .dijitArrowNode, .dj_a11y .dijitFieldset .dijitArrowNode {
 	
-	display: none;
-}
-.dijitTitlePaneTitleFixedOpen .dijitArrowNode, .dijitTitlePaneTitleFixedOpen .dijitArrowNodeInner,
-.dijitTitlePaneTitleFixedClosed .dijitArrowNode, .dijitTitlePaneTitleFixedClosed .dijitArrowNodeInner,
-.dijitFieldsetTitleFixedOpen .dijitArrowNode, .dijitFieldsetTitleFixedOpen .dijitArrowNodeInner,
-.dijitFieldsetTitleFixedClosed .dijitArrowNode, .dijitFieldsetTitleFixedClosed .dijitArrowNodeInner {
-	
-	display: none !important;	
+	display:none;
 }
 .dj_ie6 .dijitTitlePaneContentOuter,
 .dj_ie6 .dijitTitlePane .dijitTitlePaneTitle {
@@ -1037,6 +1034,7 @@ body .dijitAlignClient { position: absolute; }
 	filter: alpha(opacity=35);
 }
 .dijitMenuItemLabel {
+	position: relative;
 	vertical-align: middle;
 }
 .dj_a11y .dijitMenuItemSelected {

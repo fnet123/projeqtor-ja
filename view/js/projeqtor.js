@@ -1,3 +1,28 @@
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 // ============================================================================
 // All specific ProjeQtOr functions and variables
 // This file is included in the main.php page, to be reachable in every context
@@ -288,23 +313,23 @@ function saveBrowserLocaleToSession() {
     load: function(data,args) { }
   });
   var date = new Date(2000, 11, 31, 0, 0, 0, 0);
-  var formatted=dojo.date.locale.format(date, {formatLength: "short", selector: "date"});
-  /*var format="YYYYMMDD";
-  if (formatted.substr(0,2)=='31') {
-    format='DDMMYYYY';  
-  } else if (formatted.substr(0,2)=='12') {
-	format='MMDDYYYY';
-  }*/
-  var reg=new RegExp("(2000)", "g");
-  format=formatted.replace(reg,'YYYY');
-  reg=new RegExp("(00)", "g");
-  format=format.replace(reg,'YYYY');
-  reg=new RegExp("(12)", "g");
-  format=format.replace(reg,'MM');
-  reg=new RegExp("(31)", "g");
-  format=format.replace(reg,'DD');
+  if (browserLocaleDateFormat) {
+	  format=browserLocaleDateFormat;
+  } else {
+	  var formatted=dojo.date.locale.format(date, {formatLength: "short", selector: "date"});
+	  var reg=new RegExp("(2000)", "g");
+	  format=formatted.replace(reg,'YYYY');
+	  reg=new RegExp("(00)", "g");
+	  format=format.replace(reg,'YYYY');
+	  reg=new RegExp("(12)", "g");
+	  format=format.replace(reg,'MM');
+	  reg=new RegExp("(31)", "g");
+	  format=format.replace(reg,'DD');
+	  browserLocaleDateFormat=format;
+	  browserLocaleDateFormatJs=browserLocaleDateFormat.replace(/D/g,'d').replace(/Y/g,'y');
+  }
   dojo.xhrPost({
-    url: "../tool/saveDataToSession.php?id=browserLocaleDateFormat&value=" + format,
+    url: "../tool/saveDataToSession.php?id=browserLocaleDateFormat&value=" + encodeURI(format),
     handleAs: "text",
     load: function(data,args) { }
   });
@@ -348,7 +373,6 @@ function changeLocale(locale) {
     	  showWait();
           noDisconnect=true;
           quitConfirmed=true;
-          //window.location=("../view/main.php?directAccessPage=parameter.php&menuActualStatus=" + menuActualStatus + "&p1name=type&p1value=userParameter");
           dojo.byId("directAccessPage").value="parameter.php";
           dojo.byId("menuActualStatus").value=menuActualStatus;
           dojo.byId("p1name").value="type";
@@ -361,6 +385,24 @@ function changeLocale(locale) {
       error: function(error,args){}
     });
   }
+}
+
+function changeBrowserLocaleForDates(newFormat) {
+	saveUserParameter('browserLocaleDateFormat', newFormat);
+	dojo.xhrPost({
+	    url: "../tool/saveDataToSession.php?id=browserLocaleDateFormat&value=" + newFormat,
+	    handleAs: "text",
+	    load: function(data,args) {
+    	  showWait();
+          noDisconnect=true;
+          quitConfirmed=true;
+          dojo.byId("directAccessPage").value="parameter.php";
+          dojo.byId("menuActualStatus").value=menuActualStatus;
+          dojo.byId("p1name").value="type";
+          dojo.byId("p1value").value="userParameter";
+          dojo.byId("directAccessForm").submit();	    	
+	    }
+	  });
 }
 
 /**
@@ -531,6 +573,7 @@ function loadContent(page, destination, formName, isResultMessage, validationTyp
             loadContent("objectDetail.php", "detailDiv", 'listForm');
             showWait();
             hideList();
+            setTimeout('selectRowById("objectGrid", '+parseInt(directAccess)+');',500);
           }
         }
         if (isResultMessage) {
@@ -558,7 +601,12 @@ function loadContent(page, destination, formName, isResultMessage, validationTyp
              || page.indexOf("portfolioPlanningMain.php")>=0 || page.indexOf("portfolioPlanningList.php")>=0
              || page.indexOf("jsonPortfolioPlanning.php")>=0) {                
           drawGantt();
+          selectPlanningRow();
           hideWait();
+          var bt=dijit.byId('planButton');
+          if (bt) {
+        	  bt.set('iconClass',"iconPlanStopped");
+          }
         } else if (destination=="resultDivMultiple") {
           finalizeMultipleSave();
         } else {
@@ -588,7 +636,11 @@ function loadContent(page, destination, formName, isResultMessage, validationTyp
           var contentWidget = dijit.byId(destination);
           if (! contentWidget) {return;};
           if (dijit.byId('planResultDiv')) {
-        	  dijit.byId('planResultDiv').set('content',"");
+        	  if (dojo.byId("lastPlanStatus") && dojo.byId("lastPlanStatus").value=="INCOMPLETE") {
+        		  // Do not clean result content
+        	  } else {
+        	    dijit.byId('planResultDiv').set('content',"");
+        	  }
           }
           contentWidget.set('content',data);
           checkDestination(destination);
@@ -626,6 +678,7 @@ function loadContent(page, destination, formName, isResultMessage, validationTyp
               loadContent("objectDetail.php", "detailDiv", 'listForm');
               showWait();
               hideList();
+              setTimeout('selectRowById("objectGrid", '+parseInt(directAccess)+');',500);
             }
           }
           // fade in the destination, to set is visible back
@@ -647,7 +700,12 @@ function loadContent(page, destination, formName, isResultMessage, validationTyp
                        || page.indexOf("portfolioPlanningMain.php")>=0 || page.indexOf("portfolioPlanningList.php")>=0
                        || (page.indexOf("jsonPortfolioPlanning.php")>=0 && dijit.byId("startDatePlanView"))) {                
                  drawGantt();
+                 selectPlanningRow();
                  hideWait();
+                 var bt=dijit.byId('planButton');
+                 if (bt) {
+               	  bt.set('iconClass',"iconPlanStopped");
+                 }
                } else if (destination=="resultDivMultiple") {
                    finalizeMultipleSave();
                } else {
@@ -791,7 +849,7 @@ function finalizeMessageDisplay(destination, validationType) {
   posfin=message.indexOf('>')-1;
   typeMsg=message.substr(posdeb, posfin-posdeb);
   // if operation is OK
-  if (lastOperationStatus.value=="OK") {	  
+  if (lastOperationStatus.value=="OK" || lastOperationStatus.value=="INCOMPLETE") {	  
     posdeb=posfin+2;
     posfin=message.indexOf('<',posdeb);
     msg=message.substr(posdeb, posfin-posdeb);
@@ -799,7 +857,7 @@ function finalizeMessageDisplay(destination, validationType) {
     // changes
     addMessage(msg);
     //alert('validationType='+validationType);
-    if (validationType) {
+    if (validationType) {  	
       if (validationType=='note') {
         loadContent("objectDetail.php?refreshNotes=true", dojo.byId('objectClass').value+'_note', 'listForm');
       } else if (validationType=='attachement') {
@@ -835,7 +893,7 @@ function finalizeMessageDisplay(destination, validationType) {
         	 waitingForReply=false;
              gotoElement(lastSaveClass.value, lastSaveId.value);
              waitingForReply=true;
-          }
+          }         
       } else if (validationType=='admin'){
     	  hideWait();
       } else if (validationType=='link' && 
@@ -1031,7 +1089,8 @@ function finalizeMessageDisplay(destination, validationType) {
     hideWait();
   }
   // If operation is correct (not an error) slowly fade the result message
-  if ((lastOperationStatus.value!="ERROR" && lastOperationStatus.value!="INVALID" && lastOperationStatus.value!="CONFIRM")) {
+  if ((lastOperationStatus.value!="ERROR" && lastOperationStatus.value!="INVALID" 
+	  && lastOperationStatus.value!="CONFIRM" && lastOperationStatus.value!="INCOMPLETE")) {
     dojo.fadeOut({node: contentNode, duration: 3000}).play();
   } else {
     if (lastOperationStatus.value=="ERROR") {
@@ -1053,7 +1112,7 @@ function finalizeMessageDisplay(destination, validationType) {
       } else {
         showAlert(message);
       }
-      if (destination=="planResultDiv") {
+      if (destination=="planResultDiv" && lastOperationStatus.value!="INCOMPLETE") {
     	  dojo.fadeOut({node: contentNode, duration: 1000}).play();
     	  setTimeout("dijit.byId('planResultDiv').set('content','');",1000);    	  
       }
@@ -1398,7 +1457,7 @@ function unselectAllRows(gridName) {
 	onComplete: function (items) { 
 	  dojo.forEach(items, function (item, index) { 
 		  grid.selection.setSelected(index,false);
-	  }) 
+	  }); 
 	} 
   }); 
 }
@@ -1412,7 +1471,7 @@ function selectAllRows(gridName) {
 	onComplete: function (items) { 
 	  dojo.forEach(items, function (item, index) { 
 		  grid.selection.setSelected(index,true);
-	  }) 
+	  }); 
 	} 
   }); 
 }
@@ -1459,7 +1518,9 @@ function selectRowById(gridName, id) {
   }
   gridReposition=false;
 }
-
+function selectPlanningRow() {
+	setTimeout("selectPlanningLine(dojo.byId('objectClass').value,dojo.byId('objectId').value);",1);
+}
 /**
  * ============================================================================
  * i18n (internationalization) function to return all messages and caption in
@@ -1732,6 +1793,10 @@ function drawGantt() {
       if (item.validatedenddate!=" " && item.validatedenddate < pEnd) {
         pColor='BB5050';  
       }
+      if (item.notplannedwork>0) {
+        pColor='B45F04';  
+      }
+        
       // pMile : is it a milestone ?
       var pMile=(item.reftype=='Milestone')?1:0;
       if (pMile) { pStart=pEnd; }
@@ -1809,13 +1874,40 @@ function highlightPlanningLine(id) {
   if (id<0) return;
   vGanttCurrentLine=id;
   vTaskList=g.getList();
-  for (i=0;i<vTaskList.length;i++) {
+  for (var i=0;i<vTaskList.length;i++) {
 	JSGantt.ganttMouseOut(i); 	
   }	
   var vRowObj1 = JSGantt.findObj('child_' + id);
-  if (vRowObj1) vRowObj1.className = "dojoxGridRowSelected dojoDndItem";// ganttTask" + pType;
+  if (vRowObj1) {
+	  //vRowObj1.className = "dojoxGridRowSelected dojoDndItem";// ganttTask" + pType;
+	  dojo.addClass(vRowObj1,"dojoxGridRowSelected");
+  }
   var vRowObj2 = JSGantt.findObj('childrow_' + id);
-  if (vRowObj2) vRowObj2.className = "dojoxGridRowSelected";
+  if (vRowObj2) {
+	  //vRowObj2.className = "dojoxGridRowSelected";
+	  dojo.addClass(vRowObj2,"dojoxGridRowSelected");
+  }
+}
+function selectPlanningLine(selClass, selId) {
+	vGanttCurrentLine=id;
+	vTaskList=g.getList();
+	var tId=null;
+	for (var i=0;i<vTaskList.length;i++) {
+		scope = vTaskList[i].getScope();
+		spl=scope.split("_");	
+		if (spl.length>2 && spl[1]==selClass && spl[2]==selId) {
+		  tId=vTaskList[i].getID();
+		}	  
+	}
+	if (tId!=null) {
+	  unselectPlanningLines();
+	  highlightPlanningLine(tId);
+	}
+}
+function unselectPlanningLines() {
+	dojo.query(".dojoxGridRowSelected").forEach(function(node, index, nodelist){
+		dojo.removeClass(node,"dojoxGridRowSelected");
+	});
 }
 /**
  * calculate diffence (in work days) between dates
@@ -2460,6 +2552,7 @@ function connect(resetPassword) {
 
 function addNewItem(item) {
 	dojo.byId('objectClass').value=item;
+	dojo.byId('objectId').value=null;
 	loadContent("objectDetail.php", "detailDiv", dojo.byId('listForm'));
 	dijit.byId('planningNewItem').closeDropDown();
 }

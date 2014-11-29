@@ -1,4 +1,29 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * Presents the list of objects of a given class.
  *
@@ -68,7 +93,7 @@ if ($saveShowClosed) {
 <?php if ($canPlan) { ?>
 		              <button id="planButton" dojoType="dijit.form.Button" showlabel="false"
 		                title="<?php echo i18n('buttonPlan');?>"
-		                iconClass="iconPlan" style="display:none">
+		                iconClass="iconPlanStopped" style="display:none">
 		                <script type="dojo/connect" event="onClick" args="evt">
                      showPlanParam();
                      return false;
@@ -81,6 +106,9 @@ if ($saveShowClosed) {
                     <tr>
                       <td align="right">&nbsp;&nbsp;&nbsp;<?php echo i18n("displayStartDate");?>&nbsp;&nbsp;</td><td>
                         <div dojoType="dijit.form.DateTextBox"
+	                        <?php if (isset($_SESSION['browserLocaleDateFormatJs'])) {
+														echo ' constraints="{datePattern:\''.$_SESSION['browserLocaleDateFormatJs'].'\'}" ';
+													}?>
                            id="startDatePlanView" name="startDatePlanView"
                            invalidMessage="<?php echo i18n('messageInvalidDate')?>"
                            type="text" maxlength="10"
@@ -97,6 +125,9 @@ if ($saveShowClosed) {
                       <td align="right">&nbsp;&nbsp;&nbsp;<?php echo i18n("displayEndDate");?>&nbsp;&nbsp;</td>
                       <td>
                         <div dojoType="dijit.form.DateTextBox"
+	                        <?php if (isset($_SESSION['browserLocaleDateFormatJs'])) {
+														echo ' constraints="{datePattern:\''.$_SESSION['browserLocaleDateFormatJs'].'\'}" ';
+													}?>
                            id="endDatePlanView" name="endDatePlanView"
                            invalidMessage="<?php echo i18n('messageInvalidDate')?>"
                            type="text" maxlength="10"

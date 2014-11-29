@@ -1,3 +1,28 @@
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 // ============================================================================
 // All specific ProjeQtOr functions for work management
 // This file is included in the main.php page, to be reachable in every context
@@ -64,7 +89,7 @@ function refreshImputationList() {
 	dojo.byId('hideDone').checked=dojo.byId('listHideDone').checked;
 	if (dojo.byId('hideNotHandled') && dojo.byId('listHideNotHandled') ) {
 	  dojo.byId('hideNotHandled').checked=dojo.byId('listHideNotHandled').checked;
-	}	
+	}
 	dojo.byId('displayOnlyCurrentWeekMeetings').checked=dojo.byId('listDisplayOnlyCurrentWeekMeetings').checked;
 	loadContent('../view/refreshImputationList.php', 'workDiv', 'listForm', false);
 	return true;
@@ -271,16 +296,19 @@ function submitWorkPeriod(action) {
 }
 
 function checkCapacity() {
-  var capacity=dojo.byId('resourceCapacity').value;
+  var capacity=parseFloat(dojo.byId('resourceCapacity').value);
   for (colId=1; colId<=7; colId++) {
-	valSum=dijit.byId('colSumWork_' + colId).get("value");  
+	valSum=parseFloat(dijit.byId('colSumWork_' + colId).get("value"));
 	if (valSum > capacity) {
 		//dojo.style('colSumWork_' + colId, "backgroung","red");
 		dijit.byId('colSumWork_' + colId).set("class","imputationInvalidCapacity");
-	} else {
+	} else if (valSum < capacity) {
 		dijit.byId('colSumWork_' + colId).set("class","displayTransparent");
 		//domClass.remove('colSumWork_' + colId, "imputationInvalidCapacity");
-	}  
+	} else {
+		//dojo.style('colSumWork_' + colId, "backgroung","red");
+		dijit.byId('colSumWork_' + colId).set("class","imputationValidCapacity");
+	}   
   }
 }
 

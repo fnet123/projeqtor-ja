@@ -1,4 +1,29 @@
 <?php
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * Presents the detail of an object, for viewing or editing purpose.
  *
@@ -18,7 +43,6 @@ $readOnly=false;
  * @param $included boolean indicating wether the function is called recursively or not
  * @return void
  */
-
 function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 	global $cr, $print, $treatedObjects, $displayWidth, $outMode, $comboDetail, 
 	 $collapsedList,$printWidth, $detailWidth, $readOnly;
@@ -141,11 +165,14 @@ function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 			$internalTableCurrentRow=0;
 			$colWidth = ( $detailWidth) / $nbCol;
 			if (is_subclass_of($obj,'PlanningElement') and $internalTableRows>=3) {
-				if ($workVisibility=='NO') {
-					$internalTableRowsCaptions[$internalTableRows-2]='';
-				}
-				if ($costVisibility=='NO') {
-					$internalTableRowsCaptions[$internalTableRows-1]='';
+				for ($i=0;$i<$internalTableRows;$i++) {
+					$testRowCaption=strtolower($internalTableRowsCaptions[$i]);
+					if ($workVisibility=='NO' and substr($testRowCaption,-4)=='work') {
+						$internalTableRowsCaptions[$i]='';
+					}
+					if ($costVisibility=='NO' and (substr($testRowCaption,-4)=='cost' or substr($testRowCaption,-7)=='expense')) {
+						$internalTableRowsCaptions[$i]='';
+					}
 				}
 				if ($workVisibility!='ALL' and $costVisibility!='ALL') {
 					$val[2]='';
@@ -377,6 +404,11 @@ function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 			}
 			$dataType = $obj->getDataType($col);
 			$dataLength = $obj->getDataLength($col);
+			if ($dataType=='text') {
+				$dataLength = 65535 ;
+			} else if ($dataType=='mediumtext') {
+				$dataLength = 16777215 ;
+		  }
 			//echo $col . "/" . $dataType . "/" . $dataLength;
 			if ($dataLength) {
 				if ($dataLength <= 3) {
@@ -400,6 +432,11 @@ function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 				if (strpos($obj->getFieldAttributes($col), 'mediumWidth')!==false) {
 					$fieldWidth=$mediumWidth;
 				}
+				if (strpos($obj->getFieldAttributes($col), 'truncatedWidth')!==false) {
+					$pos=strpos($obj->getFieldAttributes($col), 'truncatedWidth');
+					$truncValue=substr($obj->getFieldAttributes($col),$pos+14,3);
+					$fieldWidth-=$truncValue;
+				}
 			}
 			//echo $dataType . '(' . $dataLength . ') ';
 			if ($included) {
@@ -420,7 +457,7 @@ function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 			//if ($comboDetail) {
 			//  $colScript=str_replace($col,$col . $extName,$colScript);
 			//  $colScriptBis=str_replace($col,$col . $extName,$colScriptBis);
-			//}
+			//}			
 			if (is_object($val) ) {
 				if (! $obj->isAttributeSetToField($col,'hidden')) {
 					if ($col=='Origin') {
@@ -539,6 +576,9 @@ function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 				if (! $print) {
 					echo '<div dojoType="dijit.form.TextBox" type="hidden"  ';
 					echo $name;
+					if ($dataType=='decimal' and (substr($col, -4,4)=='Work') ) {
+					  $val=Work::displayWork($val);
+					}
 					echo ' value="' . htmlEncode($val) . '" ></div>';
 				}
 			} else if (strpos($obj->getFieldAttributes($col), 'displayHtml')!==false) {
@@ -561,7 +601,7 @@ function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 				echo '    </span>';
         echo '  </a>';
         echo '</span>';
-        echo '<input disabled=disabled type="text" onClick="this.select();" id="directLinkUrlDiv" style="display:none;font-size:9px; color: #000000;position :absolute; top: 9px; left: 157px; border: 0;background: transparent;width:'.$largeWidth.'px;" value="'.$ref.'" />';
+        echo '<input readOnly  type="text" onClick="this.select();" id="directLinkUrlDiv" style="display:none;font-size:9px; color: #000000;position :absolute; top: 9px; left: 157px; border: 0;background: transparent;width:'.$largeWidth.'px;" value="'.$ref.'" />';
 			  $alertLevelArray=$obj->getAlertLevel(true);
         $alertLevel=$alertLevelArray['level'];
         $colorAlert="background-color:#FFFFFF";
@@ -695,7 +735,9 @@ function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 				echo $attributes;
 				echo ' invalidMessage="' . i18n('messageInvalidDate') . '"';
 				echo ' type="text" maxlength="' . $dataLength . '" ';
-				//echo ' constraints="{datePattern:\'yy-MM-dd\'}" ';
+				if (isset($_SESSION['browserLocaleDateFormatJs'])) {
+					echo ' constraints="{datePattern:\''.$_SESSION['browserLocaleDateFormatJs'].'\'}" ';
+				}
 				echo ' style="width:' . $dateWidth . 'px; text-align: center;' . $specificStyle . '" class="input" ';
 				echo ' value="' . htmlEncode($val) . '" ';
 				echo ' hasDownArrow="false" ';
@@ -720,21 +762,24 @@ function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 				echo $attributes;
 				echo ' invalidMessage="' . i18n('messageInvalidDate') . '"';
 				echo ' type="text" maxlength="10" ';
-				//echo ' constraints="{datePattern:\'yy-MM-dd\'}" ';
+				if (isset($_SESSION['browserLocaleDateFormatJs'])) {
+					echo ' constraints="{datePattern:\''.$_SESSION['browserLocaleDateFormatJs'].'\'}" ';
+				}
 				echo ' style="width:' . $dateWidth . 'px; text-align: center;' . $specificStyle . '" class="input" ';
 				echo ' value="' . $valDate . '" ';
 				echo ' hasDownArrow="false" ';
 				echo ' >';
 				echo $colScript;
 				echo '</div>';
-				echo '<div dojoType="dijit.form.TimeTextBox" ';
+        $fmtDT=(strlen($valTime)>5 && strpos($attributes, 'readonly')!==false)?'text':'time'; //valTime=substr($valTime,0,5);
+				echo '<div dojoType="dijit.form.'.(($fmtDT=='time')?'Time':'').'TextBox" ';
 				echo $nameBis;
 				echo $attributes;
 				echo ' invalidMessage="' . i18n('messageInvalidTime') . '"';
-				echo ' type="text" maxlength="5" ';
+				echo ' type="text" maxlength="8" ';
 				//echo ' constraints="{datePattern:\'yy-MM-dd\'}" ';
-				echo ' style="width:50px; text-align: center;' . $specificStyle . '" class="input" ';
-				echo ' value="T' . $valTime . '" ';
+				echo ' style="width:'.(($fmtDT=='time')?'50':'55').'px; text-align: center;' . $specificStyle . '" class="input" ';
+				echo ' value="'.(($fmtDT=='time')?'T':'') . $valTime . '" ';
 				echo ' hasDownArrow="false" ';
 				echo ' >';
 				echo $colScriptBis;
@@ -744,14 +789,15 @@ function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 				if ($col=='creationTime' and ($val=='' or $val==null) and ! $obj->id) {
 					$val=date("H:i");
 				}
-				echo '<div dojoType="dijit.form.TimeTextBox" ';
+				$fmtDT=(strlen($val)>5 && strpos($attributes, 'readonly')!==false)?'text':'time'; //valTime=substr($valTime,0,5);
+				echo '<div dojoType="dijit.form.'.(($fmtDT=='time')?'Time':'').'TextBox" ';
 				echo $name;
 				echo $attributes;
 				echo ' invalidMessage="' . i18n('messageInvalidTime') . '"';
 				echo ' type="text" maxlength="' . $dataLength . '" ';
 				//echo ' constraints="{datePattern:\'yy-MM-dd\'}" ';
-				echo ' style="width:50px; text-align: center;' . $specificStyle . '" class="input" ';
-				echo ' value="T' . $val . '" ';
+				echo ' style="width:'.(($fmtDT=='time')?'50':'55').'px; text-align: center;' . $specificStyle . '" class="input" ';
+				echo ' value="'.(($fmtDT=='time')?'T':'') . $val . '" ';
 				echo ' hasDownArrow="false" ';
 				echo ' >';
 				echo $colScript;
@@ -1045,9 +1091,9 @@ function drawTableFromObject($obj, $included=false, $parentReadOnly=false) {
 				echo $name;
 				echo $attributes;
 				if (strpos($attributes, 'readonly')>0) {
-					$specificStyle.=' color:grey; background:none; background-color: #F0F0F0; ';
+					$specificStyle.=' color:#606060 !important; background:none; background-color: #F0F0F0; ';
 				}
-				echo ' rows="2" style="width: ' . $largeWidth . 'px;' . $specificStyle . '" ';
+				echo ' rows="2" style="max-height:150px;width: ' . $largeWidth . 'px;' . $specificStyle . '" ';
 				echo ' maxlength="' . $dataLength . '" ';
 				//        echo ' maxSize="4" ';
 				echo ' class="input" ' . '>';
@@ -2293,8 +2339,7 @@ function drawResourceCostFromObject($list, $obj, $refresh=false) {
 		}
 		echo '<td class="assignData" align="left">' . SqlList::getNameFromId('Role', $rcost->idRole) . '</td>';
 		echo '<td class="assignData" align="right">' . htmlDisplayCurrency($rcost->cost);
-		if($rcost->idRole==7) echo " / " . i18n('shortMonth');
-		else echo " / " . i18n('shortDay');
+		echo " / " . i18n('shortDay');
 		echo '</td>';
 		echo '<td class="assignData" align="center">' . htmlFormatDate($rcost->startDate) . '</td>';
 		echo '<td class="assignData" align="center">' . htmlFormatDate($rcost->endDate) . '</td>';
@@ -2408,16 +2453,18 @@ function drawAffectationsFromObject($list, $obj, $type, $refresh=false) {
 	}
 
 	if (! $print) {
-		echo '<td class="assignHeader" style="width:10%">';
+		echo '<td class="assignHeader" style="width:5%">';
 		if ($obj->id!=null and ! $print and $canCreate and !$obj->idle) {
 			echo '<img src="css/images/smallButtonAdd.png" ' .
            ' onClick="addAffectation(\'' . get_class($obj) . '\',\'' . $type . '\',\''. $idRess . '\', \'' . $idProj . '\');" title="' . i18n('addAffectation') . '" class="smallButton"/> ';
 		}
 		echo '</td>';
 	}
-	echo '<td class="assignHeader" style="width:10%">' . i18n('colId') . '</td>';
-	echo '<td class="assignHeader" style="width:' . (($print)?'70':'60') . '%">' . i18n('colId'.$type) . '</td>';
-	echo '<td class="assignHeader" style="width:20%">' . i18n('colRate'). '</td>';
+	echo '<td class="assignHeader" style="width:5%">' . i18n('colId') . '</td>';
+	echo '<td class="assignHeader" style="width:' . (($print)?'50':'45') . '%">' . i18n('colId'.$type) . '</td>';
+	echo '<td class="assignHeader" style="width:15%">' . i18n('colStartDate') . '</td>';
+	echo '<td class="assignHeader" style="width:15%">' . i18n('colStartDate') . '</td>';
+	echo '<td class="assignHeader" style="width:10%">' . i18n('colRate'). '</td>';
 	//echo '<td class="assignHeader" style="width:10%">' . i18n('colIdle'). '</td>';
 
 	echo '</tr>';
@@ -2438,7 +2485,7 @@ function drawAffectationsFromObject($list, $obj, $type, $refresh=false) {
 		if ($aff->idResource!=$name) {
 			echo '<tr>';
 			if (! $print) {
-				echo '<td class="assignData'.$idleClass.'" style="text-align:center;">';
+				echo '<td class="assignData'.$idleClass.'" style="text-align:center;white-space: nowrap;">';
 				if ($canUpdate and ! $print) {
 					echo '  <img src="css/images/smallButtonEdit.png" '
 					. 'onClick="editAffectation(' . "'" . $aff->id . "'"
@@ -2448,6 +2495,8 @@ function drawAffectationsFromObject($list, $obj, $type, $refresh=false) {
 					. ",'" . $aff->idProject . "'"
 					. ",'" . $aff->rate . "'"
 					. ",'" . $aff->idle . "'"
+					. ",'" . $aff->startDate . "'"
+					. ",'" . $aff->endDate . "'"				
 					. ');" '
 					. 'title="' . i18n('editAffectation') . '" class="smallButton"/> ';
 				}
@@ -2474,7 +2523,9 @@ function drawAffectationsFromObject($list, $obj, $type, $refresh=false) {
 			} else {
 				echo '<td class="assignData'.$idleClass.'" align="left"' . $goto . '>' . htmlEncode(SqlList::getNameFromId('Project', $aff->idProject)) . '</td>';
 			}
-			echo '<td class="assignData'.$idleClass.'" align="center">' . $aff->rate . '</td>';
+			echo '<td class="assignData'.$idleClass.'" align="center" style="white-space: nowrap;">' . htmlFormatDate($aff->startDate) . '</td>';
+			echo '<td class="assignData'.$idleClass.'" align="center" style="white-space: nowrap;">' . htmlFormatDate($aff->endDate) . '</td>';
+			echo '<td class="assignData'.$idleClass.'" align="center" style="white-space: nowrap;">' . $aff->rate . '</td>';
 			//echo '<td class="assignData" align="center"><img src="../view/img/checked' . (($aff->idle)?'OK':'KO') . '.png" /></td>';
 			echo '</tr>';
 		}
@@ -2519,6 +2570,7 @@ function drawTestCaseRunFromObject($list, $obj, $refresh=false) {
 	}
 	echo '<td class="assignHeader" colspan="2" style="width:15%">' . i18n('colIdStatus'). '</td>';
 	echo '</tr>';
+	asort($list);
 	foreach($list as $tcr) {
 		if ($otherClass=='TestCase') {
 			$tc=new TestCase($tcr->idTestCase);
@@ -2817,6 +2869,20 @@ if ( array_key_exists('refresh',$_REQUEST) ) {
   }
   $noData=htmlGetNoDataMessage($objClass);
   $canRead=securityGetAccessRightYesNo('menu' . get_class($obj), 'read', $obj)=="YES";
+  if (! $obj->id) {
+		$canUpdate=securityGetAccessRightYesNo('menu' . get_class($obj), 'update')=="YES";
+		if (! $canRead or ! $canUpdate) {
+	     $accessRightRead=securityGetAccessRight('menu' . get_class($obj), 'read', $obj, $user);
+	     $accessRightUpdate=securityGetAccessRight('menu' . get_class($obj), 'update', null, $user);
+	     if ( ($accessRightRead=='OWN' or $accessRightUpdate=='OWN') and property_exists($obj, 'idUser')) {
+	       $canRead=true;
+	       $obj->idUser=$user->id;
+	     } else if ( ($accessRightRead=='RES' or $accessRightUpdate=='RES') and property_exists($obj, 'idResource')) {
+				 $canRead=true;
+				 $obj->idResource=$user->id;
+	     }
+	  }
+  }
   
   if ( $noselect) {
   	echo $noData;

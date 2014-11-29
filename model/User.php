@@ -1,4 +1,29 @@
 <?php 
+/*** COPYRIGHT NOTICE *********************************************************
+ *
+ * Copyright 2009-2014 Pascal BERNARD - support@projeqtor.org
+ * Contributors : -
+ *
+ * This file is part of ProjeQtOr.
+ * 
+ * ProjeQtOr is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
+ * 
+ * ProjeQtOr is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ProjeQtOr. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You can get complete code of ProjeQtOr, other resource, help and information
+ * about contributors at http://www.projeqtor.org 
+ *     
+ *** DO NOT REMOVE THIS NOTICE ************************************************/
+
 /* ============================================================================
  * User is a resource that can connect to the application.
  */
@@ -49,7 +74,8 @@ class User extends SqlElement {
     <th field="idle" width="5%" formatter="booleanFormatter">${idle}</th>
     ';
   
-  private static $_fieldsAttributes=array("name"=>"required",
+  private static $_fieldsAttributes=array("name"=>"required, truncatedWidth100",
+  		                                    "email"=>"truncatedWidth100",
   										                    "isLdap"=>"hidden,forceExport",
                                           "idProfile"=>"required",
                                           "loginTry"=>"hidden",
@@ -268,16 +294,18 @@ class User extends SqlElement {
           $result.='<td class="label">'.i18n('colPhoto').'&nbsp;:&nbsp;</td>';
           $result.='<td>&nbsp;&nbsp;';
           $result.='<img src="css/images/smallButtonRemove.png" onClick="removeAttachement('.$image->id.');" title="'.i18n('removePhoto').'" class="smallButton"/>';         
-        } else {
-          if ($outMode=='pdf') {
-            $left=450;
-            $top=90;
-          } else {
-            $left=400;
-            $top=64;
-          }
-        }
-        $result.='<div style="position: absolute; top:'.$top.'px;left:'.$left.'px; width:80px;height:80px;border: 1px solid grey;">'
+        	$horizontal='right:51%';
+    	    $top='30px';
+    	  } else {
+    	  	if ($outMode=='pdf') {
+    	  		$horizontal='left:450px';
+            $top='100px';
+    	  	} else {
+    	  	  $horizontal='left:400px';
+    	  	  $top='70px';
+    	  	}
+    	  }
+        $result.='<div style="position: absolute; top:'.$top.';'.$horizontal.'; width:80px;height:80px;border: 1px solid grey;">'
            . ' <img src="'. getImageThumb($image->getFullPathFileName(),80).'" '
            . ' title="'.$image->fileName.'" style="cursor:pointer;"'
            . ' onClick="showImage(\'Attachement\',\''.$image->id.'\',\''.$image->fileName.'\');" /></div>';
@@ -293,7 +321,7 @@ class User extends SqlElement {
           $result.='<td class="label">'.i18n('colPhoto').'&nbsp;:&nbsp;</td>';
           $result.='<td>&nbsp;&nbsp;';
           $result.='<img src="css/images/smallButtonAdd.png" onClick="addAttachement(\'file\');" title="'.i18n('addPhoto').'" class="smallButton"/> ';
-          $result.='<div style="position: absolute; top:'.$top.'px;left:'.$left.'px; width:80px;height:80px;border: 1px solid grey;color: grey;font-size:80%; text-align:center;cursor: pointer;" '
+          $result.='<div style="position: absolute; top:30px;right:51%; width:80px;height:80px;border: 1px solid grey;color: grey;font-size:80%; text-align:center;cursor: pointer;" '
               .' onClick="addAttachement(\'file\');" title="'.i18n('addPhoto').'">'
               . i18n('addPhoto').'</div>';
           $result.='</td>';
