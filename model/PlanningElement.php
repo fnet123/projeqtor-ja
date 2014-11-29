@@ -443,12 +443,8 @@ class PlanningElement extends SqlElement {
   
   public function simpleSave() {
     $this->plannedDuration=workDayDiffDates($this->plannedStartDate, $this->plannedEndDate);
-    if ($this->validatedStartDate and $this->validatedEndDate) {
-    	$this->validatedDuration=workDayDiffDates($this->validatedStartDate, $this->validatedEndDate);
-    }
-    if ($this->initialStartDate and $this->initialEndDate) {
-      $this->initialDuration=workDayDiffDates($this->initialStartDate, $this->initialEndDate);
-    }
+    $this->validatedDuration=workDayDiffDates($this->validatedStartDate, $this->validatedEndDate);
+    $this->initialDuration=workDayDiffDates($this->initialStartDate, $this->initialEndDate);
     $result = parent::save();
   }
 

@@ -1,4 +1,4 @@
-{
+﻿{
 aboutMessage: "ProjecQtOrについて",
 aboutMessageLocale: "ロケール",
 aboutMessageWebsite: "ウェブサイト",
@@ -462,7 +462,6 @@ colNameClient: "取引先",
 colNewStatus: "新規ステータス",
 colNextDocumentVersion: "新規バージョン",
 colNote: "コメント",
-colNotPlannedWork: "[not planned work]",
 colNoWork: "作業なし",
 colNumBank: "銀行番号",
 colNumCompte: "口座番号",

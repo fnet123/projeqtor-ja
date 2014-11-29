@@ -374,8 +374,7 @@ class PlannedWork extends GeneralWork {
 	            }
 	          }
         	}
-        }
-        $plan->notPlannedWork=0;
+        }   
         foreach ($listAss as $ass) {
           if ($profile=='GROUP' and $withProjectRepartition) {
           	foreach ($listAss as $asstmp) {
@@ -492,11 +491,6 @@ class PlannedWork extends GeneralWork {
                     if ($rateProj<0) {
                     	$changedAss=true;
                     	$ass->notPlannedWork=$left;
-                    	$plan->notPlannedWork+=$left;
-                    	if (!$ass->plannedStartDate) $ass->plannedStartDate=$currentDate;
-                    	if (!$ass->plannedEndDate) $ass->plannedEndDate=$currentDate;
-                    	if (!$plan->plannedStartDate) $plan->plannedStartDate=$currentDate;
-                    	if (!$plan->plannedEndDate) $plan->plannedEndDate=$currentDate;
                     	$arrayNotPlanned[$ass->id]=$left;
                     	$left=0;
                     }
@@ -566,7 +560,7 @@ class PlannedWork extends GeneralWork {
 	                    if (isset($grp['ResourceWork'][$projectKey][$week])) {
 	                      $plannedProj=$grp['ResourceWork'][$projectKey][$week];
 	                    }
-	                    $rateProj=Resource::findAffectationRate($grp['ResourceWork'][$projectKey]['rate'],$currentDate) / 100;
+	                    $rateProj=Resource::findAffectationRate($grp['ResourceWork'][$projectKey]['rate']) / 100;
 	                    if ($rateProj==1) {
 	                      $leftProj=round(7*$grp['capacity']*$rateProj,2)-$plannedProj; // capacity for a full week
 	                      // => to be able to plan weekends

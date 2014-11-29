@@ -167,7 +167,7 @@ function maintenance() {
   } else if ($item=="Mail") {
   	$clauseWhere="mailDateTime<'" . $targetDate . "'";
   } else if ($item=="Audit") {
-    $clauseWhere="disconnectionDateTime<'" . $targetDate . "'";
+    $clauseWhere="disconnection<'" . $targetDate . "'";
    
   }
   if ($operation=="close") {
