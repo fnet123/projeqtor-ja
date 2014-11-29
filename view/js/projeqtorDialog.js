@@ -3193,9 +3193,9 @@ function editAffectation(id, objectClass, type, idResource, idProject, rate,idle
 	}
 	refreshList('idProject', null, null, idProject, 'affectationProject', true);
 	if (objectClass=='Project') {
-	  refreshList('id'+type, null, null, null, 'affectationResource', true);
+	  refreshList('id'+type, null, null, idResource, 'affectationResource', true);
 	} else { 
-	  refreshList('id'+objectClass, null, null, null, 'affectationResource', true);
+	  refreshList('id'+objectClass, null, null, idResource, 'affectationResource', true);
 	}
 	dijit.byId("affectationResource").set('required',true);
 	dojo.byId("affectationId").value=id;
@@ -3237,9 +3237,9 @@ function editAffectation(id, objectClass, type, idResource, idProject, rate,idle
 function saveAffectation() {
 	var formVar = dijit.byId('affectationForm');
 	if (dijit.byId('affectationStartDate') && dijit.byId('affectationEndDate') ) {
-	   start=trim(dijit.byId('affectationStartDate').get("value"));
-	   end=trim(dijit.byId('affectationEndDate').get("value"));
-	   if (start!="" && end!="" && end<start) {
+	   var start=dijit.byId('affectationStartDate').value;
+	   var end=dijit.byId('affectationEndDate').value;	   
+	   if (start && end && dayDiffDates(start,end)<0) {
 		   showAlert(i18n("errorStartEndDates",new Array(i18n("colStartDate"),i18n("colEndDate"))));
 		   return;
 	   }

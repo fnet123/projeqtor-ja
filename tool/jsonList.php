@@ -122,7 +122,11 @@
         $list=SqlList::getList($class);
       }
       if ($selected) {
-        $list[$selected]=SqlList::getNameFromId($class, $selected);
+      	$name=SqlList::getNameFromId($class, $selected);
+      	if ($name==$selected and ($class=='Resource' or $class=='User' or $class=='Contact')) {
+      		$name=SqlList::getNameFromId('Affectable', $selected);
+      	}
+        $list[$selected]=$name;
       }
       if ($dataType=="idProject") { $wbsList=SqlList::getList('Project','sortOrder',$selected, true);} 
       $nbRows=0;
@@ -176,7 +180,7 @@
 	      $nbRows=0;
 	      $lstRes=array();
 	      if (array_key_exists('selected', $_REQUEST)) {
-	        $lstRes[$_REQUEST['selected']]=SqlList::getNameFromId('Resource', $_REQUEST['selected']);
+	        $lstRes[$_REQUEST['selected']]=SqlList::getNameFromId('Affectable', $_REQUEST['selected']);
 	      }
 	      foreach ($list as $aff) {
 	        if (! array_key_exists($aff->idResource, $lstRes)) {

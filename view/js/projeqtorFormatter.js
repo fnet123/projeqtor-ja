@@ -239,9 +239,10 @@ function costFormatter(value) {
  * @return the formatted value
  */
 function dateFormatter(value) {
+  fmt=top.getBrowserLocaleDateFormatJs();
   if (value.length==10) {
   	vDate=dojo.date.locale.parse(value, {selector: "date", datePattern: "yyyy-MM-dd"});
-    return dojo.date.locale.format(vDate, {datePattern: browserLocaleDateFormatJs,formatLength: "short", fullYear: true, selector: "date"});
+    return dojo.date.locale.format(vDate, {datePattern: fmt,formatLength: "short", fullYear: true, selector: "date"});
   } else {
   	return value;
   }
@@ -272,6 +273,7 @@ function longDateFormatter(value) {
  * @return the formatted value
  */
 function dateTimeFormatter(value) {
+  fmt=top.getBrowserLocaleDateFormatJs();
   if (value && value.length==19) {
   	vDate=dojo.date.locale.parse(value, {datePattern: "yyyy-MM-dd", timePattern: "HH:mm:ss", selector: 'date and time'});
   	if (! vDate) {
@@ -280,7 +282,7 @@ function dateTimeFormatter(value) {
   	    return dateFormatter(value.substr(0,10))+":"+value.substr(11,5);
   	  }
   	}
-    return dojo.date.locale.format(vDate, {datePattern: browserLocaleDateFormatJs,formatLength: "short", fullYear: true});
+    return dojo.date.locale.format(vDate, {datePattern: fmt,formatLength: "short", fullYear: true});
   } else {
   	return value;
   }
